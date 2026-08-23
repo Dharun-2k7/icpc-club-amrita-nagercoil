@@ -37,7 +37,10 @@
         </div>
 
         <div class="nav-actions">
-          <a href="join-us.html" class="btn btn-join">Join Us</a>
+          <a href="login.html" class="btn btn-outline" id="nav-login-btn">Log In</a>
+          <a href="register.html" class="btn btn-join" id="nav-register-btn">Register</a>
+          <a href="dashboard.html" class="btn btn-join" id="nav-dashboard-btn" style="display: none;">Dashboard</a>
+          <button class="btn btn-outline" id="nav-logout-btn" style="display: none;">Log Out</button>
         </div>
 
         <button class="menu-toggle" aria-label="Toggle navigation">
@@ -63,12 +66,12 @@
             </p>
             <form id="login-form" class="join-form">
               <div class="form-group">
-                <label for="member_name">Full Name</label>
-                <input id="member_name" name="member_name" type="text" placeholder="Your full name" required />
-              </div>
-              <div class="form-group">
                 <label for="roll_number">Roll Number</label>
                 <input id="roll_number" name="roll_number" type="text" placeholder="e.g. NC.SC.U4CSE25004" required />
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" placeholder="Your password" required />
               </div>
 
               <!-- Status Message -->
@@ -134,14 +137,7 @@
     </footer>
 
     <script>
-      // Temporary database of members (you can update this list with the students who are members)
-      const clubMembers = [
-        { name: "John Doe", rollNumber: "NC.SC.U4CSE25004" },
-        { name: "Jane Smith", rollNumber: "NC.SC.U4CSE25005" }
-        // Add more members here
-      ];
-
-      document.getElementById('login-form').addEventListener('submit', function(e) {
+      document.getElementById('login-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const btn = document.getElementById('login-btn');
@@ -151,33 +147,43 @@
         btn.disabled = true;
         statusEl.style.display = 'none';
 
-        const enteredName = document.getElementById('member_name').value.trim().toLowerCase();
-        const enteredRollNumber = document.getElementById('roll_number').value.trim().toLowerCase();
+        const rollNumber = document.getElementById('roll_number').value.trim();
+        const password = document.getElementById('password').value;
 
-        // Check against our club database (case insensitive)
-        const isMember = clubMembers.find(member => 
-          member.name.toLowerCase() === enteredName && 
-          member.rollNumber.toLowerCase() === enteredRollNumber
-        );
+        try {
+          const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roll_number: rollNumber, password })
+          });
+          const data = await res.json();
 
-        setTimeout(() => { // Simulate a short delay
-          if (isMember) {
+          if (res.ok) {
+            localStorage.setItem('icpc_token', data.token);
+            localStorage.setItem('icpc_user', JSON.stringify(data.user));
+            
             statusEl.style.display = 'block';
-            statusEl.style.color = '#0D9488'; // Teal success
+            statusEl.style.color = '#0D9488';
             statusEl.textContent = 'Login successful! Redirecting...';
             
-            // Redirect to the dashboard page upon successful login
             setTimeout(() => {
-              window.location.href = 'dashboard.html';
+              window.location.href = data.user.role === 'admin' ? 'admin.html' : 'dashboard.html';
             }, 1000);
           } else {
             statusEl.style.display = 'block';
-            statusEl.style.color = '#E11D48'; // Red error
-            statusEl.textContent = 'Invalid name or roll number. Access denied.';
+            statusEl.style.color = '#E11D48';
+            statusEl.textContent = data.message || 'Invalid credentials.';
             btn.textContent = 'Log In';
             btn.disabled = false;
           }
-        }, 500);
+        } catch (err) {
+          console.error(err);
+          statusEl.style.display = 'block';
+          statusEl.style.color = '#E11D48';
+          statusEl.textContent = 'An error occurred. Please try again.';
+          btn.textContent = 'Log In';
+          btn.disabled = false;
+        }
       });
     </script>
     <script src="script.js" defer></script>

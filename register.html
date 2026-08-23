@@ -72,6 +72,10 @@
                 <input id="roll_number" name="roll_number" type="text" placeholder="e.g. NC.SC.U4CSE25004" required />
               </div>
               <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" placeholder="Create a password" required />
+              </div>
+              <div class="form-group">
                 <label for="class_name">Class / Department</label>
                 <input id="class_name" name="class_name" type="text" placeholder="e.g. B.Tech CYS" required />
               </div>
@@ -108,6 +112,7 @@
         const payload = {
           student_name: document.getElementById('student_name').value.trim(),
           roll_number: document.getElementById('roll_number').value.trim(),
+          password: document.getElementById('password').value,
           class_name: document.getElementById('class_name').value.trim(),
           batch: document.getElementById('batch').value.trim(),
           codeforces_handle: document.getElementById('codeforces_handle').value.trim(),
