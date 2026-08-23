@@ -708,8 +708,9 @@ h2 {
 
 .member-photo-wrapper {
   position: relative;
-  width: 130px;
-  height: 130px;
+  width: 150px;
+  height: 150px;
+    cursor: pointer;
   border-radius: 50%;
   margin-bottom: 1.25rem;
   padding: 3px;
@@ -1975,5 +1976,101 @@ h2 {
   }
   .timeline-content {
     padding: 1.5rem;
+  }
+}
+
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  overflow: auto;
+}
+
+.modal.show {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+}
+
+.modal-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: scale(0.8);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal.show .modal-content {
+  transform: scale(1);
+}
+
+.modal-content img {
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: 12px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  object-fit: contain;
+}
+
+.modal-caption {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.modal-caption h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+  color: #fff;
+}
+
+.modal-caption p {
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+.close-modal {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+  color: var(--icpc-red);
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .close-modal {
+    top: -40px;
+    right: 0px;
   }
 }

@@ -352,3 +352,62 @@ if (document.readyState === 'loading') {
      }  
  } ) ;  
  
+
+// Photo Modal Functionality
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('photo-modal');
+  if (!modal) return;
+  
+  const modalImg = document.getElementById('modal-img');
+  const modalName = document.getElementById('modal-name');
+  const modalRole = document.getElementById('modal-role');
+  const closeBtn = document.querySelector('.close-modal');
+
+  // Add click event to all member photo wrappers
+  const photoWrappers = document.querySelectorAll('.member-photo-wrapper');
+  
+  photoWrappers.forEach(wrapper => {
+    wrapper.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const card = this.closest('.member-card');
+      const img = this.querySelector('img');
+      const name = card.querySelector('.member-name').textContent;
+      const role = card.querySelector('.member-role').textContent;
+
+      modalImg.src = img.src;
+      modalName.textContent = name;
+      modalRole.textContent = role;
+
+      modal.style.display = 'flex';
+      // Small delay to allow display block to apply before adding class for transition
+      setTimeout(() => {
+        modal.classList.add('show');
+      }, 10);
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
+    });
+  });
+
+  const closeModal = () => {
+    modal.classList.remove('show');
+    setTimeout(() => {
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }, 300); // Wait for transition
+  };
+
+  closeBtn.addEventListener('click', closeModal);
+
+  // Close on outside click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+
+  // Close on Esc key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('show')) {
+      closeModal();
+    }
+  });
+});
