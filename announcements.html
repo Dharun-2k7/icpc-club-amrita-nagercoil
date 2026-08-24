@@ -73,17 +73,53 @@
             <p class="section-label">OFFICIAL NOTICES</p>
             <h2>Stay updated with the latest news</h2>
           </div>
-          <ul class="announcement-list">
-            <li><strong>REVDEBUG 2026</strong> event announced! Registration is open for all departments and years.</li>
-            <li>Registration for the next training session is now open.</li>
-            <li>Mock contest scheduled for this weekend.</li>
-            <li>New workshop on dynamic programming announced.</li>
-            <li>Team meeting reminder shared for all members.</li>
-            <li>Internal Codeforces ranklist updated for Q3 competitive track.</li>
+          <ul class="announcement-list" id="announcements-container">
+            <li>Loading official notices...</li>
           </ul>
         </div>
       </section>
     </main>
+
+    <script>
+      async function loadDynamicAnnouncements() {
+        try {
+          const res = await fetch('/api/announcements');
+          const data = await res.json();
+          const container = document.getElementById('announcements-container');
+          
+          if (Array.isArray(data) && data.length > 0) {
+            container.innerHTML = '';
+            data.forEach(item => {
+              const dateStr = new Date(item.publish_date).toLocaleDateString();
+              let statusTag = '';
+              if (item.session_status) {
+                const colorMap = { 'UPCOMING': '#38bdf8', 'ONGOING': '#2dd4bf', 'COMPLETED': '#94a3b8', 'CANCELLED': '#f43f5e' };
+                statusTag = ` <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.1); color: ${colorMap[item.session_status] || '#fff'}; font-weight: bold; margin-left: 8px;">${item.session_status}</span>`;
+              }
+
+              container.innerHTML += `
+                <li>
+                  <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
+                    <strong>${item.title}</strong>${statusTag}
+                    <small style="color: #94a3b8;">${dateStr}</small>
+                  </div>
+                  <p style="margin-top: 4px; color: #cbd5e1;">${item.content}</p>
+                </li>
+              `;
+            });
+          } else {
+            container.innerHTML = `
+              <li><strong>REVDEBUG 2026</strong> event announced! Registration is open for all departments and years.</li>
+              <li>Registration for the next training session is now open.</li>
+              <li>Mock contest scheduled for this weekend.</li>
+            `;
+          }
+        } catch (err) {
+          console.error('Error fetching announcements:', err);
+        }
+      }
+      document.addEventListener('DOMContentLoaded', loadDynamicAnnouncements);
+    </script>
 
     <!-- Wave canvas container -->
     <div id="wave-container">

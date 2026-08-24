@@ -66,8 +66,8 @@
             </p>
             <form id="login-form" class="join-form">
               <div class="form-group">
-                <label for="roll_number">Roll Number</label>
-                <input id="roll_number" name="roll_number" type="text" placeholder="e.g. NC.SC.U4CSE25004" required />
+                <label for="roll_number">Email Address / Roll Number</label>
+                <input id="roll_number" name="roll_number" type="text" placeholder="e.g. student@amrita.edu or NC.SC.U4CSE25004" required />
               </div>
               <div class="form-group">
                 <label for="password">Password</label>
@@ -147,14 +147,14 @@
         btn.disabled = true;
         statusEl.style.display = 'none';
 
-        const rollNumber = document.getElementById('roll_number').value.trim();
+        const identifier = document.getElementById('roll_number').value.trim();
         const password = document.getElementById('password').value;
 
         try {
           const res = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roll_number: rollNumber, password })
+            body: JSON.stringify({ roll_number: identifier, email: identifier, password })
           });
           const data = await res.json();
 
@@ -167,7 +167,7 @@
             statusEl.textContent = 'Login successful! Redirecting...';
             
             setTimeout(() => {
-              window.location.href = data.user.role === 'admin' ? 'admin.html' : 'dashboard.html';
+              window.location.href = data.user.role === 'ADMIN' || data.user.role === 'admin' ? 'admin.html' : 'dashboard.html';
             }, 1000);
           } else {
             statusEl.style.display = 'block';

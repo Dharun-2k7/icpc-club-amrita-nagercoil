@@ -319,39 +319,38 @@ if (document.readyState === 'loading') {
     window.addEventListener('DOMContentLoaded', start);
   }
 })();
- 
- / /   A u t h   S t a t e   M a n a g e m e n t  
- d o c u m e n t . a d d E v e n t L i s t e n e r ( ' D O M C o n t e n t L o a d e d ' ,   ( )   = >   {  
-     c o n s t   t o k e n   =   l o c a l S t o r a g e . g e t I t e m ( ' i c p c _ t o k e n ' ) ;  
-     c o n s t   u s e r S t r   =   l o c a l S t o r a g e . g e t I t e m ( ' i c p c _ u s e r ' ) ;  
-      
-     c o n s t   l o g i n B t n   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' n a v - l o g i n - b t n ' ) ;  
-     c o n s t   r e g i s t e r B t n   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' n a v - r e g i s t e r - b t n ' ) ;  
-     c o n s t   d a s h b o a r d B t n   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' n a v - d a s h b o a r d - b t n ' ) ;  
-     c o n s t   l o g o u t B t n   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' n a v - l o g o u t - b t n ' ) ;  
-  
-     i f   ( t o k e n   & &   u s e r S t r )   {  
-         i f   ( l o g i n B t n )   l o g i n B t n . s t y l e . d i s p l a y   =   ' n o n e ' ;  
-         i f   ( r e g i s t e r B t n )   r e g i s t e r B t n . s t y l e . d i s p l a y   =   ' n o n e ' ;  
-         i f   ( d a s h b o a r d B t n )   d a s h b o a r d B t n . s t y l e . d i s p l a y   =   ' i n l i n e - b l o c k ' ;  
-         i f   ( l o g o u t B t n )   l o g o u t B t n . s t y l e . d i s p l a y   =   ' i n l i n e - b l o c k ' ;  
-  
-         c o n s t   u s e r   =   J S O N . p a r s e ( u s e r S t r ) ;  
-         i f   ( u s e r . r o l e   = = =   ' a d m i n '   & &   d a s h b o a r d B t n )   {  
-             d a s h b o a r d B t n . t e x t C o n t e n t   =   ' A d m i n   P a n e l ' ;  
-             d a s h b o a r d B t n . h r e f   =   ' a d m i n . h t m l ' ;  
-         }  
-  
-         i f   ( l o g o u t B t n )   {  
-             l o g o u t B t n . a d d E v e n t L i s t e n e r ( ' c l i c k ' ,   ( )   = >   {  
-                 l o c a l S t o r a g e . r e m o v e I t e m ( ' i c p c _ t o k e n ' ) ;  
-                 l o c a l S t o r a g e . r e m o v e I t e m ( ' i c p c _ u s e r ' ) ;  
-                 w i n d o w . l o c a t i o n . h r e f   =   ' i n d e x . h t m l ' ;  
-             } ) ;  
-         }  
-     }  
- } ) ;  
- 
+
+// Auth State Management
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('icpc_token');
+  const userStr = localStorage.getItem('icpc_user');
+  
+  const loginBtn = document.getElementById('nav-login-btn');
+  const registerBtn = document.getElementById('nav-register-btn');
+  const dashboardBtn = document.getElementById('nav-dashboard-btn');
+  const logoutBtn = document.getElementById('nav-logout-btn');
+
+  if (token && userStr) {
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (registerBtn) registerBtn.style.display = 'none';
+    if (dashboardBtn) dashboardBtn.style.display = 'inline-block';
+    if (logoutBtn) logoutBtn.style.display = 'inline-block';
+
+    const user = JSON.parse(userStr);
+    if ((user.role === 'ADMIN' || user.role === 'admin') && dashboardBtn) {
+      dashboardBtn.textContent = 'Admin Panel';
+      dashboardBtn.href = 'admin.html';
+    }
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('icpc_token');
+        localStorage.removeItem('icpc_user');
+        window.location.href = 'index.html';
+      });
+    }
+  }
+});
 
 // Photo Modal Functionality
 document.addEventListener('DOMContentLoaded', () => {

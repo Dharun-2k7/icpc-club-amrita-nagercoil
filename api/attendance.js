@@ -3,74 +3,138 @@ const jwt = require('jsonwebtoken');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
-const secret = process.env.JWT_SECRET || 'icpc-club-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'icpc-club-secret-key';
+
+function verifyToken(req) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  try {
+    return jwt.verify(authHeader.split(' ')[1], JWT_SECRET);
+  } catch (err) {
+    return null;
+  }
+}
 
 export default async function handler(req, res) {
-  // Middleware to check admin token for POST requests
-  let decodedUser = null;
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
-    try {
-      decodedUser = jwt.verify(token, secret);
-    } catch (err) {
-      // invalid token, leave decodedUser as null
-    }
-  }
+  const user = verifyToken(req);
+  const { session_id, action } = req.query;
 
-  if (req.method === 'GET') {
-    const { session_id, student_id } = req.query;
-    
+  // GET /api/attendance?action=me -> Logged in member's own attendance profile & summary
+  if (req.method === 'GET' && action === 'me') {
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized: Authentication required' });
+    }
+
     try {
-      if (session_id && student_id) {
-        // Fetch specific student's attendance for a session
-        const result = await pool.query(
-          'SELECT status FROM attendance WHERE session_id = $1 AND student_id = $2',
-          [session_id, student_id]
-        );
-        return res.status(200).json(result.rows[0] || { status: 'absent' });
-      } else if (session_id) {
-        // Fetch all attendance for a session (admin only ideally, but we'll allow it or check role)
-        const result = await pool.query(
-          `SELECT a.id, a.session_id, a.student_id, a.status, s.student_name, s.roll_number 
-           FROM attendance a 
-           JOIN students s ON a.student_id = s.id 
-           WHERE a.session_id = $1`,
-          [session_id]
-        );
-        return res.status(200).json(result.rows);
+      // Fetch user's club_member_id
+      const uRes = await pool.query(`SELECT club_member_id FROM users WHERE id = $1`, [user.id]);
+      if (uRes.rows.length === 0) {
+        return res.status(404).json({ message: 'Member record not found' });
       }
-      return res.status(400).json({ message: 'Missing session_id' });
+
+      const cmId = uRes.rows[0].club_member_id;
+
+      // Attendance history for this member
+      const attHistory = await pool.query(
+        `SELECT a.id, a.session_id, a.status, a.marked_at,
+                s.title as session_title, s.session_type, s.start_time, s.location
+         FROM attendance a
+         JOIN sessions s ON a.session_id = s.id
+         WHERE a.club_member_id = $1
+         ORDER BY s.start_time DESC`,
+        [cmId]
+      );
+
+      // Total completed sessions in club
+      const totalSessionsRes = await pool.query(
+        `SELECT COUNT(*) FROM sessions WHERE start_time <= CURRENT_TIMESTAMP AND status != 'CANCELLED'`
+      );
+      const totalSessions = parseInt(totalSessionsRes.rows[0].count, 10);
+
+      const presentCount = attHistory.rows.filter(r => r.status.toUpperCase() === 'PRESENT').length;
+      const absentCount = attHistory.rows.filter(r => r.status.toUpperCase() === 'ABSENT').length;
+      const percentage = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 0;
+
+      return res.status(200).json({
+        total_sessions: totalSessions,
+        present_count: presentCount,
+        absent_count: absentCount,
+        attendance_percentage: percentage,
+        history: attHistory.rows
+      });
     } catch (error) {
-      console.error('Error fetching attendance:', error);
+      console.error('Error fetching member attendance:', error);
       return res.status(500).json({ message: 'Internal Server Error' });
     }
   }
 
-  if (req.method === 'POST') {
-    if (!decodedUser || decodedUser.role !== 'admin') {
+  // GET /api/attendance?session_id=X -> Admin fetches session attendance roster
+  if (req.method === 'GET') {
+    if (!user || user.role !== 'ADMIN') {
       return res.status(403).json({ message: 'Forbidden: Admins only' });
     }
 
-    const { session_id, student_id, status } = req.body;
-    if (!session_id || !student_id) {
-      return res.status(400).json({ message: 'session_id and student_id are required' });
+    if (!session_id) {
+      return res.status(400).json({ message: 'session_id is required' });
     }
 
     try {
-      // Upsert attendance
       const result = await pool.query(
-        `INSERT INTO attendance (session_id, student_id, status) 
-         VALUES ($1, $2, $3) 
-         ON CONFLICT (session_id, student_id) 
-         DO UPDATE SET status = EXCLUDED.status RETURNING *`,
-        [session_id, student_id, status || 'present']
+        `SELECT a.id, a.session_id, a.club_member_id, a.status, a.marked_at,
+                cm.name as member_name, cm.student_id, cm.email, cm.department, cm.year
+         FROM attendance a
+         JOIN club_members cm ON a.club_member_id = cm.id
+         WHERE a.session_id = $1
+         ORDER BY cm.name ASC`,
+        [session_id]
       );
+      return res.status(200).json(result.rows);
+    } catch (error) {
+      console.error('Error fetching attendance roster:', error);
+      return res.status(500).json({ message: 'Internal Server Error' });
+    }
+  }
+
+  // POST /api/attendance -> Admin marks/upserts attendance
+  if (req.method === 'POST') {
+    if (!user || user.role !== 'ADMIN') {
+      return res.status(403).json({ message: 'Forbidden: Admins only' });
+    }
+
+    const { session_id: sId, club_member_id, student_id, status } = req.body;
+    const targetSessionId = sId || session_id;
+
+    if (!targetSessionId || (!club_member_id && !student_id)) {
+      return res.status(400).json({ message: 'session_id and member identifier (club_member_id or student_id) are required' });
+    }
+
+    try {
+      let cmId = club_member_id;
+      if (!cmId && student_id) {
+        const cmRes = await pool.query(`SELECT id FROM club_members WHERE student_id = $1`, [student_id]);
+        if (cmRes.rows.length === 0) {
+          return res.status(404).json({ message: 'Club member not found with provided student_id' });
+        }
+        cmId = cmRes.rows[0].id;
+      }
+
+      const attStatus = (status || 'PRESENT').toUpperCase();
+
+      const result = await pool.query(
+        `INSERT INTO attendance (session_id, club_member_id, status, marked_by)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (session_id, club_member_id)
+         DO UPDATE SET status = EXCLUDED.status, marked_by = EXCLUDED.marked_by, marked_at = CURRENT_TIMESTAMP
+         RETURNING *`,
+        [targetSessionId, cmId, attStatus, user.id]
+      );
+
       return res.status(200).json(result.rows[0]);
     } catch (error) {
-      console.error('Error updating attendance:', error);
+      console.error('Error marking attendance:', error);
       return res.status(500).json({ message: 'Internal Server Error' });
     }
   }

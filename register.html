@@ -68,6 +68,10 @@
                 <input id="student_name" name="student_name" type="text" placeholder="Your full name" required />
               </div>
               <div class="form-group">
+                <label for="email">College Email Address</label>
+                <input id="email" name="email" type="email" placeholder="e.g. student@amrita.edu" required />
+              </div>
+              <div class="form-group">
                 <label for="roll_number">Roll Number</label>
                 <input id="roll_number" name="roll_number" type="text" placeholder="e.g. NC.SC.U4CSE25004" required />
               </div>
@@ -111,6 +115,7 @@
 
         const payload = {
           student_name: document.getElementById('student_name').value.trim(),
+          email: document.getElementById('email').value.trim(),
           roll_number: document.getElementById('roll_number').value.trim(),
           password: document.getElementById('password').value,
           class_name: document.getElementById('class_name').value.trim(),

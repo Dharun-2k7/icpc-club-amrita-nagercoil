@@ -3,93 +3,309 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Prototype - Animations</title>
+  <title>Member Dashboard - ICPC Club Amrita Nagercoil</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="dashboard-animations.css">
+  <link rel="icon" type="image/webp" href="images/icpc.webp" />
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .dashboard-container {
+      max-width: 1100px;
+      margin: 40px auto 100px auto;
+      padding: 24px;
+    }
+    .profile-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 768px) {
+      .grid-3 { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #0D9488;
+      margin-top: 8px;
+    }
+    .section-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: 0.9rem;
+    }
+    .data-table th, .data-table td {
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: left;
+    }
+    .data-table th {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+    }
+    .badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-present { background: rgba(13, 148, 136, 0.25); color: #2dd4bf; }
+    .badge-absent { background: rgba(225, 29, 72, 0.2); color: #f43f5e; }
+  </style>
 </head>
 <body>
-
-  <!-- 
-    The unique wrapper: All animations and styles are strictly scoped to this ID.
-    This prevents conflicts with your global ICPC Club site styles.
-  -->
-  <div id="dashboard-wrapper">
-    <!-- Custom Cursor -->
-    <div class="custom-cursor"></div>
-
-    <!-- Header Section with Page Load Animation -->
-    <header style="padding: 100px 2rem 50px 2rem; text-align: center;">
-      <h1 class="load-animate-up" style="font-size: 3rem; margin-bottom: 1rem;">
-        Welcome to the Dashboard
-      </h1>
-      <p class="load-animate-fade" style="font-size: 1.25rem; color: #475569; max-width: 600px; margin: 0 auto;">
-        These animations are extracted and rebuilt from the Webflow portfolio reference, operating strictly within this isolated wrapper.
-      </p>
-    </header>
-
-    <!-- Scroll Reveal Content Section -->
-    <section style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
-      
-      <div style="margin-bottom: 4rem; text-align: center;">
-        <h2 class="reveal-on-scroll" style="font-size: 2rem; margin-bottom: 1rem;">Recent Projects</h2>
-        <p class="reveal-on-scroll" style="color: #475569;">Hover over the cards below to see the 3D interaction.</p>
+  <!-- Header Navbar -->
+  <header class="hero subpage-hero" style="min-height: auto; padding-bottom: 20px;">
+    <nav class="navbar">
+      <div class="brand-wrapper">
+        <a class="edge-logo" href="https://icpc.foundation" target="_blank" rel="noopener noreferrer">
+          <img src="images/icpc.webp" alt="ICPC Foundation linked club logo" class="edge-logo-img" />
+        </a>
+        <a class="brand" href="index.html">ICPC Club <span>Amrita Nagercoil</span></a>
       </div>
 
-      <!-- 3D Hover Interactive Grid -->
-      <div class="projects-grid">
+      <div class="nav-links">
+        <a href="about.html">About</a>
+        <a href="roadmap.html">Roadmap</a>
+        <a href="events.html">Events</a>
+        <a href="announcements.html">Announcements</a>
+        <a href="contact.html">Contact</a>
+      </div>
+
+      <div class="nav-actions">
+        <a href="admin.html" class="btn btn-outline" id="nav-admin-link" style="display: none;">Admin Panel</a>
+        <button class="btn btn-join" id="dash-logout-btn">Log Out</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="dashboard-container">
+    <!-- Profile Banner Card -->
+    <div class="profile-card">
+      <div>
+        <h1 style="font-size: 1.8rem; margin-bottom: 4px;" id="user-name">Member Dashboard</h1>
+        <p style="color: #94a3b8;" id="user-sub">Student ID: <span id="user-roll">...</span> | Email: <span id="user-email">...</span></p>
+        <div style="margin-top: 8px; font-size: 0.9rem; color: #cbd5e1;">
+          Department: <strong id="user-dept">...</strong> | Codeforces Handle: <strong id="user-cf" style="color: #38bdf8;">...</strong>
+        </div>
+      </div>
+      <div>
+        <span class="btn btn-outline" id="user-role-badge" style="border-color: #0D9488; color: #0D9488;">MEMBER</span>
+      </div>
+    </div>
+
+    <!-- Attendance Stats Grid -->
+    <div class="grid-3">
+      <div class="stat-card">
+        <div style="color: #94a3b8; font-size: 0.9rem;">Overall Attendance Percentage</div>
+        <div class="stat-val" id="stat-percentage">0%</div>
+      </div>
+      <div class="stat-card">
+        <div style="color: #94a3b8; font-size: 0.9rem;">Sessions Attended (Present)</div>
+        <div class="stat-val" id="stat-present" style="color: #2dd4bf;">0</div>
+      </div>
+      <div class="stat-card">
+        <div style="color: #94a3b8; font-size: 0.9rem;">Total Club Sessions Conducted</div>
+        <div class="stat-val" id="stat-total" style="color: #38bdf8;">0</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Attendance History Section -->
+      <div class="section-card">
+        <h3 style="margin-bottom: 16px;">My Attendance History</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Session / Event Title</th>
+              <th>Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="attendance-tbody">
+            <tr><td colspan="3" style="text-align: center; color: #94a3b8;">Loading attendance data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Recent Announcements & Upcoming Events -->
+      <div>
+        <div class="section-card">
+          <h3 style="margin-bottom: 16px;">Latest Club Announcements</h3>
+          <div id="announcements-feed">
+            <p style="color: #94a3b8;">Loading announcements...</p>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h3 style="margin-bottom: 16px;">Upcoming Club Events & Contests</h3>
+          <div id="events-feed">
+            <p style="color: #94a3b8;">Loading upcoming events...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-bottom">
+      <div class="footer-copy">© 2026 ICPC @Nagercoil. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    const token = localStorage.getItem('icpc_token');
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('dash-logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('icpc_token');
+      localStorage.removeItem('icpc_user');
+      window.location.href = 'index.html';
+    });
+
+    async function loadDashboard() {
+      try {
+        // 1. Fetch User Profile
+        const resUser = await fetch('/api/auth?action=me', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
         
-        <!-- Card 1 -->
-        <div class="project-card-wrap reveal-on-scroll" style="transition-delay: 0.1s;">
-          <div class="project-card-inner">
-            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80" alt="Dashboard Chart">
-            <div class="project-info">
-              <h3>Analytics Platform</h3>
-              <p>Data visualization UI</p>
-            </div>
-          </div>
-        </div>
+        if (!resUser.ok) {
+          localStorage.removeItem('icpc_token');
+          window.location.href = 'login.html';
+          return;
+        }
 
-        <!-- Card 2 -->
-        <div class="project-card-wrap reveal-on-scroll" style="transition-delay: 0.2s;">
-          <div class="project-card-inner">
-            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80" alt="Healthtech App">
-            <div class="project-info">
-              <h3>Pathology Services</h3>
-              <p>SaaS dashboard interface</p>
-            </div>
-          </div>
-        </div>
+        const user = await resUser.json();
+        document.getElementById('user-name').textContent = user.name;
+        document.getElementById('user-roll').textContent = user.student_id;
+        document.getElementById('user-email').textContent = user.email;
+        document.getElementById('user-dept').textContent = user.department || 'N/A';
+        document.getElementById('user-cf').textContent = user.codeforces_handle || 'Not set';
+        document.getElementById('user-role-badge').textContent = user.role;
 
-        <!-- Card 3 -->
-        <div class="project-card-wrap reveal-on-scroll" style="transition-delay: 0.3s;">
-          <div class="project-card-inner">
-            <img src="https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=800&q=80" alt="Mobile Strategy">
-            <div class="project-info">
-              <h3>Mobile Architecture</h3>
-              <p>App system design</p>
-            </div>
-          </div>
-        </div>
+        if (user.role === 'ADMIN' || user.role === 'admin') {
+          document.getElementById('nav-admin-link').style.display = 'inline-block';
+        }
 
-      </div>
+        // 2. Fetch Member's Personal Attendance Summary
+        const resAtt = await fetch('/api/attendance?action=me', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (resAtt.ok) {
+          const att = await resAtt.json();
+          document.getElementById('stat-percentage').textContent = `${att.attendance_percentage}%`;
+          document.getElementById('stat-present').textContent = att.present_count;
+          document.getElementById('stat-total').textContent = att.total_sessions;
 
-      <!-- Extra spacing to demonstrate scroll reveal -->
-      <div style="height: 60vh;"></div>
+          const tbody = document.getElementById('attendance-tbody');
+          tbody.innerHTML = '';
+          if (att.history && att.history.length > 0) {
+            att.history.forEach(h => {
+              const d = new Date(h.start_time).toLocaleDateString();
+              const isP = h.status.toUpperCase() === 'PRESENT';
+              tbody.innerHTML += `
+                <tr>
+                  <td><strong>${h.session_title}</strong><br><small style="color:#94a3b8;">${h.session_type}</small></td>
+                  <td>${d}</td>
+                  <td><span class="badge ${isP ? 'badge-present' : 'badge-absent'}">${h.status}</span></td>
+                </tr>
+              `;
+            });
+          } else {
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #94a3b8;">No attendance records found yet.</td></tr>`;
+          }
+        }
 
-      <div style="text-align: center; margin-bottom: 5rem;">
-        <h2 class="reveal-on-scroll" style="font-size: 2.5rem; margin-bottom: 1.5rem;">Ready to collaborate?</h2>
-        <button class="reveal-on-scroll" style="padding: 1rem 2rem; font-size: 1.1rem; background-color: #0F172A; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
-          Send an Inquiry
-        </button>
-      </div>
+        // 3. Fetch Dynamic Announcements
+        const resAnn = await fetch('/api/announcements');
+        if (resAnn.ok) {
+          const annList = await resAnn.json();
+          const feed = document.getElementById('announcements-feed');
+          feed.innerHTML = '';
+          if (Array.isArray(annList) && annList.length > 0) {
+            annList.slice(0, 4).forEach(a => {
+              feed.innerHTML += `
+                <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 12px;">
+                  <div style="font-weight: 600; color: #fff;">${a.title}</div>
+                  <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 2px;">${a.content}</div>
+                </div>
+              `;
+            });
+          } else {
+            feed.innerHTML = '<p style="color: #94a3b8;">No active announcements.</p>';
+          }
+        }
 
-    </section>
+        // 4. Fetch Dynamic Upcoming Events
+        const resSess = await fetch('/api/sessions');
+        if (resSess.ok) {
+          const sessList = await resSess.json();
+          const feed = document.getElementById('events-feed');
+          feed.innerHTML = '';
+          const upcoming = sessList.filter(s => s.calculated_status === 'UPCOMING' || s.calculated_status === 'ONGOING');
+          if (upcoming.length > 0) {
+            upcoming.forEach(s => {
+              const d = new Date(s.start_time).toLocaleString();
+              feed.innerHTML += `
+                <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 12px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong style="color:#fff;">${s.title}</strong>
+                    <span class="badge ${s.calculated_status === 'ONGOING' ? 'badge-present' : 'badge-absent'}" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">${s.calculated_status}</span>
+                  </div>
+                  <div style="font-size:0.85rem; color:#94a3b8; margin-top:4px;">${d} | ${s.location || 'Main Auditorium'}</div>
+                </div>
+              `;
+            });
+          } else {
+            feed.innerHTML = '<p style="color: #94a3b8;">No upcoming events scheduled right now.</p>';
+          }
+        }
 
-  </div>
+      } catch (err) {
+        console.error('Error loading dashboard:', err);
+      }
+    }
 
-  <script src="dashboard-animations.js"></script>
+    loadDashboard();
+  </script>
 </body>
 </html>
-

@@ -4,38 +4,51 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel - ICPC Club Amrita Nagercoil</title>
+  <link rel="icon" type="image/webp" href="images/icpc.webp" />
   <link rel="stylesheet" href="styles.css" />
   <style>
     .admin-container {
-      max-width: 1000px;
-      margin: 100px auto;
-      padding: 20px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
+      max-width: 1100px;
+      margin: 40px auto 100px auto;
+      padding: 24px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
       border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     }
     .admin-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 30px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
     .admin-tabs {
       display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
     }
     .tab-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 8px 16px;
-      color: #fff;
-      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 10px 18px;
+      color: #cbd5e1;
+      border-radius: 8px;
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
     }
     .tab-btn.active {
       background: #0D9488;
       border-color: #0D9488;
+      color: #fff;
     }
     .tab-content {
       display: none;
@@ -43,45 +56,80 @@
     .tab-content.active {
       display: block;
     }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-top: 8px;
+    }
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 16px;
     }
     .form-group label {
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: #94a3b8;
     }
     .form-group input, .form-group textarea, .form-group select {
       width: 100%;
-      padding: 10px;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(0, 0, 0, 0.2);
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(15, 23, 42, 0.8);
       color: #fff;
+      font-size: 0.95rem;
     }
     .data-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      margin-top: 16px;
+      font-size: 0.9rem;
     }
     .data-table th, .data-table td {
-      padding: 12px;
+      padding: 12px 14px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       text-align: left;
     }
     .data-table th {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
     }
+    .badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-upcoming { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+    .badge-ongoing { background: rgba(13, 148, 136, 0.25); color: #2dd4bf; }
+    .badge-completed { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+    .badge-cancelled { background: rgba(225, 29, 72, 0.2); color: #f43f5e; }
   </style>
 </head>
 <body>
-  <!-- Navigation -->
-  <header class="hero" style="min-height: auto; padding-bottom: 0;">
+  <header class="hero subpage-hero" style="min-height: auto; padding-bottom: 20px;">
     <nav class="navbar">
       <div class="brand-wrapper">
         <a class="brand" href="index.html">ICPC Club <span>Amrita Nagercoil</span></a>
       </div>
       <div class="nav-actions">
-        <a href="dashboard.html" class="btn btn-outline">Dashboard</a>
+        <a href="dashboard.html" class="btn btn-outline">Member Dashboard</a>
         <button class="btn btn-join" id="admin-logout-btn">Log Out</button>
       </div>
     </nav>
@@ -89,71 +137,253 @@
 
   <main class="container admin-container">
     <div class="admin-header">
-      <h2>Admin Panel</h2>
+      <div>
+        <h2>Admin Management Panel</h2>
+        <p style="color: #94a3b8; margin-top: 4px;">Role-Based Access Control & Operations Center</p>
+      </div>
+      <div id="admin-info" style="text-align: right; color: #0D9488; font-weight: 600;"></div>
     </div>
 
     <div class="admin-tabs">
-      <button class="tab-btn active" onclick="switchTab('sessions-tab')">Manage Sessions</button>
+      <button class="tab-btn active" onclick="switchTab('overview-tab')">Overview</button>
+      <button class="tab-btn" onclick="switchTab('members-tab')">Manage Members</button>
+      <button class="tab-btn" onclick="switchTab('sessions-tab')">Manage Sessions</button>
       <button class="tab-btn" onclick="switchTab('attendance-tab')">Track Attendance</button>
+      <button class="tab-btn" onclick="switchTab('announcements-tab')">Announcements</button>
     </div>
 
-    <!-- Create Session Tab -->
-    <div id="sessions-tab" class="tab-content active">
-      <h3>Create New Session/Meeting</h3>
-      <form id="create-session-form">
-        <div class="form-group">
-          <label>Title</label>
-          <input type="text" id="session-title" required />
+    <!-- 1. OVERVIEW TAB -->
+    <div id="overview-tab" class="tab-content active">
+      <h3>System Stats</h3>
+      <div class="grid-2" style="margin-top: 16px;">
+        <div class="stat-card">
+          <div style="color: #94a3b8;">Total Approved Club Members</div>
+          <div class="stat-val" id="stat-members-count">0</div>
         </div>
-        <div class="form-group">
-          <label>Date & Time</label>
-          <input type="datetime-local" id="session-date" required />
+        <div class="stat-card">
+          <div style="color: #94a3b8;">Total Registered Accounts</div>
+          <div class="stat-val" id="stat-users-count">0</div>
         </div>
-        <div class="form-group">
-          <label>Type</label>
-          <select id="session-type">
-            <option value="session">Session</option>
-            <option value="meeting">Meeting</option>
-          </select>
+        <div class="stat-card">
+          <div style="color: #94a3b8;">Active Sessions / Workshops</div>
+          <div class="stat-val" id="stat-sessions-count">0</div>
         </div>
-        <div class="form-group">
-          <label>Description</label>
-          <textarea id="session-desc" rows="3"></textarea>
+        <div class="stat-card">
+          <div style="color: #94a3b8;">Total Announcements</div>
+          <div class="stat-val" id="stat-announcements-count">0</div>
         </div>
-        <button type="submit" class="btn btn-primary">Create Session</button>
-      </form>
-      <div id="session-msg" style="margin-top: 10px;"></div>
-    </div>
-
-    <!-- Attendance Tab -->
-    <div id="attendance-tab" class="tab-content">
-      <h3>Mark Attendance</h3>
-      <div class="form-group">
-        <label>Select Session</label>
-        <select id="attendance-session-select" onchange="loadStudents()">
-          <option value="">-- Select a Session --</option>
-        </select>
       </div>
-      
-      <table class="data-table" id="attendance-table" style="display:none;">
+    </div>
+
+    <!-- 2. MEMBERS MANAGEMENT TAB -->
+    <div id="members-tab" class="tab-content">
+      <div class="grid-2">
+        <div>
+          <h3>Add Single Approved Member</h3>
+          <form id="add-member-form" style="margin-top: 12px;">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" id="m-name" required placeholder="e.g. Ramesh Kumar" />
+            </div>
+            <div class="form-group">
+              <label>College Email *</label>
+              <input type="email" id="m-email" required placeholder="e.g. ramesh@amrita.edu" />
+            </div>
+            <div class="form-group">
+              <label>Roll Number (Student ID) *</label>
+              <input type="text" id="m-roll" required placeholder="e.g. NC.SC.U4CSE25005" />
+            </div>
+            <div class="form-group">
+              <label>Department</label>
+              <input type="text" id="m-dept" placeholder="e.g. B.Tech CSE" />
+            </div>
+            <div class="form-group">
+              <label>Batch / Year</label>
+              <input type="text" id="m-year" placeholder="e.g. 2026-2030" />
+            </div>
+            <div class="form-group">
+              <label>Codeforces Handle</label>
+              <input type="text" id="m-cf" placeholder="e.g. ramesh_code" />
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Add Approved Member</button>
+          </form>
+          <div id="member-form-msg" style="margin-top: 10px; text-align: center; font-weight: 600;"></div>
+        </div>
+
+        <div>
+          <h3>Bulk CSV Import</h3>
+          <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 6px;">
+            Paste CSV formatted lines: <code>Name, Email, StudentID, Department, Year, CodeforcesHandle</code>
+          </p>
+          <textarea id="csv-input" rows="8" style="width: 100%; margin-top: 10px; background: rgba(0,0,0,0.3); color: #fff; padding: 10px; border-radius: 8px;" placeholder="Name, Email, StudentID, Department, Year, CodeforcesHandle"></textarea>
+          <button onclick="handleCSVImport()" class="btn btn-outline" style="margin-top: 10px; width: 100%;">Import Members</button>
+          <div id="csv-msg" style="margin-top: 10px; text-align: center; font-weight: 600;"></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 32px;">Approved Roster & Registration Status</h3>
+      <table class="data-table">
         <thead>
           <tr>
             <th>Name</th>
-            <th>Roll Number</th>
+            <th>Email / Roll</th>
+            <th>Department</th>
+            <th>Account Registered</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
+        <tbody id="members-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- 3. SESSIONS MANAGEMENT TAB -->
+    <div id="sessions-tab" class="tab-content">
+      <h3>Create New Session / Workshop</h3>
+      <form id="create-session-form" style="margin-top: 12px;">
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Title *</label>
+            <input type="text" id="session-title" required placeholder="e.g. Dynamic Programming Workshop" />
+          </div>
+          <div class="form-group">
+            <label>Type</label>
+            <select id="session-type">
+              <option value="WORKSHOP">Workshop</option>
+              <option value="CLUB_MEETING">Club Meeting</option>
+              <option value="PRACTICE_CONTEST">Practice Contest</option>
+              <option value="TRAINING">Training</option>
+              <option value="COMPETITION">Competition</option>
+              <option value="SEMINAR">Seminar</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Start Date & Time *</label>
+            <input type="datetime-local" id="session-start" required />
+          </div>
+          <div class="form-group">
+            <label>End Date & Time *</label>
+            <input type="datetime-local" id="session-end" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" id="session-loc" placeholder="e.g. Lab 3 / Online Codeforces" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="session-desc" rows="3" placeholder="Topics covered, guidelines, pre-requisites..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Session</button>
+      </form>
+      <div id="session-msg" style="margin-top: 10px; font-weight: 600;"></div>
+
+      <h3 style="margin-top: 32px;">Existing Sessions</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Start Time</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="sessions-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- 4. ATTENDANCE TAB -->
+    <div id="attendance-tab" class="tab-content">
+      <h3>Mark Session Attendance</h3>
+      <div class="form-group" style="margin-top: 12px;">
+        <label>Select Session</label>
+        <select id="attendance-session-select" onchange="loadAttendanceRoster()">
+          <option value="">-- Select a Session --</option>
+        </select>
+      </div>
+
+      <table class="data-table" id="attendance-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>Member Name</th>
+            <th>Roll Number</th>
+            <th>Department</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
         <tbody id="attendance-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- 5. ANNOUNCEMENTS TAB -->
+    <div id="announcements-tab" class="tab-content">
+      <h3>Create New Announcement</h3>
+      <form id="create-announcement-form" style="margin-top: 12px;">
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Title *</label>
+            <input type="text" id="ann-title" required placeholder="e.g. REVDEBUG 2026 Registration Open" />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="ann-type">
+              <option value="GENERAL">General</option>
+              <option value="WORKSHOP">Workshop</option>
+              <option value="MEETING">Meeting</option>
+              <option value="PRACTICE_CONTEST">Practice Contest</option>
+              <option value="COMPETITION">Competition</option>
+              <option value="IMPORTANT">Important Notice</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Link to Session (Optional for dynamic status)</label>
+          <select id="ann-session-select">
+            <option value="">-- None (Standalone Announcement) --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Content / Message *</label>
+          <textarea id="ann-content" rows="4" required placeholder="Announcement details and links..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Publish Announcement</button>
+      </form>
+      <div id="ann-msg" style="margin-top: 10px; font-weight: 600;"></div>
+
+      <h3 style="margin-top: 32px;">Published Announcements</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Linked Session</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="announcements-tbody"></tbody>
       </table>
     </div>
   </main>
 
   <script>
     const token = localStorage.getItem('icpc_token');
-    if (!token) {
+    const userStr = localStorage.getItem('icpc_user');
+    
+    if (!token || !userStr) {
       window.location.href = 'login.html';
     }
+
+    const currentUser = JSON.parse(userStr);
+    if (currentUser.role !== 'ADMIN' && currentUser.role !== 'admin') {
+      alert('Access Denied: Admin privileges required.');
+      window.location.href = 'dashboard.html';
+    }
+
+    document.getElementById('admin-info').textContent = `Admin: ${currentUser.name}`;
 
     document.getElementById('admin-logout-btn').addEventListener('click', () => {
       localStorage.removeItem('icpc_token');
@@ -167,69 +397,276 @@
       document.getElementById(tabId).classList.add('active');
       event.target.classList.add('active');
 
-      if (tabId === 'attendance-tab') {
-        loadSessionsForAttendance();
+      if (tabId === 'overview-tab') loadOverviewStats();
+      if (tabId === 'members-tab') loadMembersRoster();
+      if (tabId === 'sessions-tab') loadSessionsList();
+      if (tabId === 'attendance-tab') loadSessionsSelectForAttendance();
+      if (tabId === 'announcements-tab') loadAnnouncementsAndSessionOptions();
+    }
+
+    // --- OVERVIEW STATS ---
+    async function loadOverviewStats() {
+      try {
+        const [resM, resS, resA] = await Promise.all([
+          fetch('/api/members', { headers: { 'Authorization': 'Bearer ' + token } }),
+          fetch('/api/sessions'),
+          fetch('/api/announcements')
+        ]);
+        const members = await resM.json();
+        const sessions = await resS.json();
+        const announcements = await resA.json();
+
+        if (Array.isArray(members)) {
+          document.getElementById('stat-members-count').textContent = members.length;
+          const registered = members.filter(m => m.is_registered).length;
+          document.getElementById('stat-users-count').textContent = registered;
+        }
+        if (Array.isArray(sessions)) {
+          document.getElementById('stat-sessions-count').textContent = sessions.length;
+        }
+        if (Array.isArray(announcements)) {
+          document.getElementById('stat-announcements-count').textContent = announcements.length;
+        }
+      } catch (err) {
+        console.error('Error loading stats:', err);
       }
     }
 
-    // Create Session
-    document.getElementById('create-session-form').addEventListener('submit', async (e) => {
+    // --- MEMBERS MANAGEMENT ---
+    async function loadMembersRoster() {
+      try {
+        const res = await fetch('/api/members', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const members = await res.json();
+        const tbody = document.getElementById('members-tbody');
+        tbody.innerHTML = '';
+
+        if (!Array.isArray(members)) return;
+
+        members.forEach(m => {
+          const isReg = m.is_registered;
+          const isActive = m.is_active;
+
+          tbody.innerHTML += `
+            <tr>
+              <td><strong>${m.name}</strong><br><small style="color:#94a3b8;">CF: ${m.codeforces_handle || 'N/A'}</small></td>
+              <td>${m.email}<br><small style="color:#94a3b8;">${m.student_id}</small></td>
+              <td>${m.department || 'N/A'}<br><small style="color:#94a3b8;">${m.year || ''}</small></td>
+              <td>${isReg ? '<span class="badge badge-ongoing">Registered (' + m.user_role + ')</span>' : '<span class="badge badge-completed">Not Registered</span>'}</td>
+              <td>${isActive ? '<span style="color:#2dd4bf;">Active</span>' : '<span style="color:#f43f5e;">Deactivated</span>'}</td>
+              <td>
+                <button onclick="toggleMemberStatus(${m.id}, ${!isActive})" class="btn btn-outline" style="padding:4px 8px; font-size:11px;">
+                  ${isActive ? 'Deactivate' : 'Reactivate'}
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        console.error('Error loading members roster:', err);
+      }
+    }
+
+    document.getElementById('add-member-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const btn = e.target.querySelector('button');
-      btn.disabled = true;
-      
+      const msgEl = document.getElementById('member-form-msg');
       const payload = {
-        title: document.getElementById('session-title').value,
-        date: new Date(document.getElementById('session-date').value).toISOString(),
-        type: document.getElementById('session-type').value,
-        description: document.getElementById('session-desc').value
+        name: document.getElementById('m-name').value,
+        email: document.getElementById('m-email').value,
+        student_id: document.getElementById('m-roll').value,
+        department: document.getElementById('m-dept').value,
+        year: document.getElementById('m-year').value,
+        codeforces_handle: document.getElementById('m-cf').value
       };
 
       try {
-        const res = await fetch('/api/sessions', {
+        const res = await fetch('/api/members', {
           method: 'POST',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
           },
           body: JSON.stringify(payload)
         });
         const data = await res.json();
-        
-        const msgEl = document.getElementById('session-msg');
         if (res.ok) {
-          msgEl.style.color = '#0D9488';
-          msgEl.textContent = 'Session created successfully!';
+          msgEl.style.color = '#2dd4bf';
+          msgEl.textContent = 'Member added to approved roster!';
           e.target.reset();
+          loadMembersRoster();
         } else {
-          msgEl.style.color = '#E11D48';
-          msgEl.textContent = data.message || 'Error creating session';
+          msgEl.style.color = '#f43f5e';
+          msgEl.textContent = data.message || 'Error adding member';
         }
       } catch (err) {
         console.error(err);
-      } finally {
-        btn.disabled = false;
       }
     });
 
-    // Load Sessions for Attendance Select
-    async function loadSessionsForAttendance() {
+    async function handleCSVImport() {
+      const csvText = document.getElementById('csv-input').value.trim();
+      const msgEl = document.getElementById('csv-msg');
+      if (!csvText) return alert('Please enter CSV lines first.');
+
+      const lines = csvText.split('\n');
+      const members = [];
+      lines.forEach(line => {
+        const parts = line.split(',').map(s => s.trim());
+        if (parts.length >= 3) {
+          members.push({
+            name: parts[0],
+            email: parts[1],
+            student_id: parts[2],
+            department: parts[3] || null,
+            year: parts[4] || null,
+            codeforces_handle: parts[5] || null
+          });
+        }
+      });
+
+      try {
+        const res = await fetch('/api/members?action=import-csv', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ members })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msgEl.style.color = '#2dd4bf';
+          msgEl.textContent = data.message;
+          document.getElementById('csv-input').value = '';
+          loadMembersRoster();
+        } else {
+          msgEl.style.color = '#f43f5e';
+          msgEl.textContent = data.message || 'Import error';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.toggleMemberStatus = async function(id, status) {
+      try {
+        const res = await fetch(`/api/members?id=${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ is_active: status })
+        });
+        if (res.ok) loadMembersRoster();
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    // --- SESSIONS MANAGEMENT ---
+    async function loadSessionsList() {
       try {
         const res = await fetch('/api/sessions');
         const sessions = await res.json();
-        const select = document.getElementById('attendance-session-select');
-        select.innerHTML = '<option value="">-- Select a Session --</option>';
+        const tbody = document.getElementById('sessions-tbody');
+        tbody.innerHTML = '';
+
+        if (!Array.isArray(sessions)) return;
+
         sessions.forEach(s => {
-          const d = new Date(s.date).toLocaleString();
-          select.innerHTML += \`<option value="\${s.id}">\${s.title} (\${d})</option>\`;
+          const stClass = `badge-${s.calculated_status.toLowerCase()}`;
+          const startDate = new Date(s.start_time).toLocaleString();
+          tbody.innerHTML += `
+            <tr>
+              <td><strong>${s.title}</strong><br><small style="color:#94a3b8;">${s.location || 'N/A'}</small></td>
+              <td>${s.session_type}</td>
+              <td>${startDate}</td>
+              <td><span class="badge ${stClass}">${s.calculated_status}</span></td>
+              <td>
+                ${s.calculated_status !== 'CANCELLED' ? `<button onclick="cancelSession(${s.id})" class="btn btn-outline" style="padding:4px 8px; font-size:11px; border-color:#f43f5e; color:#f43f5e;">Cancel Session</button>` : 'Cancelled'}
+              </td>
+            </tr>
+          `;
         });
       } catch (err) {
         console.error(err);
       }
     }
 
-    // Load Students and their attendance for selected session
-    async function loadStudents() {
+    document.getElementById('create-session-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msgEl = document.getElementById('session-msg');
+      const payload = {
+        title: document.getElementById('session-title').value,
+        session_type: document.getElementById('session-type').value,
+        start_time: new Date(document.getElementById('session-start').value).toISOString(),
+        end_time: new Date(document.getElementById('session-end').value).toISOString(),
+        location: document.getElementById('session-loc').value,
+        description: document.getElementById('session-desc').value
+      };
+
+      try {
+        const res = await fetch('/api/sessions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msgEl.style.color = '#2dd4bf';
+          msgEl.textContent = 'Session created successfully!';
+          e.target.reset();
+          loadSessionsList();
+        } else {
+          msgEl.style.color = '#f43f5e';
+          msgEl.textContent = data.message || 'Error creating session';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    window.cancelSession = async function(id) {
+      if (!confirm('Are you sure you want to cancel this session?')) return;
+      try {
+        const res = await fetch(`/api/sessions?id=${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ status: 'CANCELLED' })
+        });
+        if (res.ok) loadSessionsList();
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    // --- ATTENDANCE TRACKING ---
+    async function loadSessionsSelectForAttendance() {
+      try {
+        const res = await fetch('/api/sessions');
+        const sessions = await res.json();
+        const select = document.getElementById('attendance-session-select');
+        select.innerHTML = '<option value="">-- Select a Session --</option>';
+        if (Array.isArray(sessions)) {
+          sessions.forEach(s => {
+            const d = new Date(s.start_time).toLocaleString();
+            select.innerHTML += `<option value="${s.id}">${s.title} (${d})</option>`;
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadAttendanceRoster() {
       const sessionId = document.getElementById('attendance-session-select').value;
       const table = document.getElementById('attendance-table');
       const tbody = document.getElementById('attendance-tbody');
@@ -240,47 +677,50 @@
       }
 
       try {
-        // Fetch all students
-        const resSt = await fetch('/api/students', {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const students = await resSt.json();
+        const [resMembers, resAtt] = await Promise.all([
+          fetch('/api/members', { headers: { 'Authorization': 'Bearer ' + token } }),
+          fetch(`/api/attendance?session_id=${sessionId}`, { headers: { 'Authorization': 'Bearer ' + token } })
+        ]);
 
-        // Fetch attendance for this session
-        const resAtt = await fetch(\`/api/attendance?session_id=\${sessionId}\`);
-        const attendanceData = await resAtt.json();
+        const members = await resMembers.json();
+        const attendanceList = await resAtt.json();
+
         const attMap = {};
-        if (Array.isArray(attendanceData)) {
-          attendanceData.forEach(a => {
-            attMap[a.student_id] = a.status;
+        if (Array.isArray(attendanceList)) {
+          attendanceList.forEach(a => {
+            attMap[a.club_member_id] = a.status;
           });
         }
 
         tbody.innerHTML = '';
-        students.forEach(st => {
-          const status = attMap[st.id] || 'absent';
-          const isPresent = status === 'present';
-          
-          tbody.innerHTML += \`
-            <tr>
-              <td>\${st.student_name}</td>
-              <td>\${st.roll_number}</td>
-              <td id="status-\${st.id}" style="color: \${isPresent ? '#0D9488' : '#E11D48'}">\${status.toUpperCase()}</td>
-              <td>
-                <button onclick="markAttendance(\${sessionId}, \${st.id}, 'present')" class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;">Mark Present</button>
-                <button onclick="markAttendance(\${sessionId}, \${st.id}, 'absent')" class="btn btn-outline" style="padding: 4px 8px; font-size: 12px; border-color: #E11D48; color: #E11D48;">Mark Absent</button>
-              </td>
-            </tr>
-          \`;
-        });
+        if (Array.isArray(members)) {
+          members.forEach(m => {
+            const currentStatus = (attMap[m.id] || 'ABSENT').toUpperCase();
+            const isPresent = currentStatus === 'PRESENT';
+
+            tbody.innerHTML += `
+              <tr>
+                <td><strong>${m.name}</strong></td>
+                <td>${m.student_id}</td>
+                <td>${m.department || 'N/A'}</td>
+                <td id="att-status-${m.id}" style="color: ${isPresent ? '#2dd4bf' : '#f43f5e'}; font-weight:700;">
+                  ${currentStatus}
+                </td>
+                <td>
+                  <button onclick="markMemberAttendance(${sessionId}, ${m.id}, 'PRESENT')" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;">Mark Present</button>
+                  <button onclick="markMemberAttendance(${sessionId}, ${m.id}, 'ABSENT')" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px; border-color: #f43f5e; color: #f43f5e;">Mark Absent</button>
+                </td>
+              </tr>
+            `;
+          });
+        }
         table.style.display = 'table';
       } catch (err) {
         console.error(err);
-        alert('Error loading students. Ensure you have admin privileges.');
       }
     }
 
-    window.markAttendance = async function(sessionId, studentId, status) {
+    window.markMemberAttendance = async function(sessionId, memberId, status) {
       try {
         const res = await fetch('/api/attendance', {
           method: 'POST',
@@ -288,21 +728,112 @@
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
           },
-          body: JSON.stringify({ session_id: sessionId, student_id: studentId, status })
+          body: JSON.stringify({ session_id: sessionId, club_member_id: memberId, status })
         });
-        
         if (res.ok) {
-          const statusEl = document.getElementById(\`status-\${studentId}\`);
-          statusEl.textContent = status.toUpperCase();
-          statusEl.style.color = status === 'present' ? '#0D9488' : '#E11D48';
-        } else {
-          const data = await res.json();
-          alert(data.message || 'Error marking attendance');
+          const el = document.getElementById(`att-status-${memberId}`);
+          if (el) {
+            el.textContent = status;
+            el.style.color = status === 'PRESENT' ? '#2dd4bf' : '#f43f5e';
+          }
         }
       } catch (err) {
         console.error(err);
       }
     };
+
+    // --- ANNOUNCEMENTS ---
+    async function loadAnnouncementsAndSessionOptions() {
+      try {
+        const [resA, resS] = await Promise.all([
+          fetch('/api/announcements'),
+          fetch('/api/sessions')
+        ]);
+        const announcements = await resA.json();
+        const sessions = await resS.json();
+
+        // Populate session dropdown option
+        const sessSelect = document.getElementById('ann-session-select');
+        sessSelect.innerHTML = '<option value="">-- None (Standalone Announcement) --</option>';
+        if (Array.isArray(sessions)) {
+          sessions.forEach(s => {
+            sessSelect.innerHTML += `<option value="${s.id}">${s.title}</option>`;
+          });
+        }
+
+        // Populate announcements list
+        const tbody = document.getElementById('announcements-tbody');
+        tbody.innerHTML = '';
+        if (Array.isArray(announcements)) {
+          announcements.forEach(a => {
+            const dateStr = new Date(a.publish_date).toLocaleDateString();
+            tbody.innerHTML += `
+              <tr>
+                <td><strong>${a.title}</strong></td>
+                <td>${a.announcement_type}</td>
+                <td>${a.session_title ? a.session_title + ' (' + a.session_status + ')' : 'None'}</td>
+                <td>${dateStr}</td>
+                <td>
+                  <button onclick="deleteAnnouncement(${a.id})" class="btn btn-outline" style="padding:4px 8px; font-size:11px; border-color:#f43f5e; color:#f43f5e;">Delete</button>
+                </td>
+              </tr>
+            `;
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    document.getElementById('create-announcement-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msgEl = document.getElementById('ann-msg');
+      const payload = {
+        title: document.getElementById('ann-title').value,
+        announcement_type: document.getElementById('ann-type').value,
+        session_id: document.getElementById('ann-session-select').value || null,
+        content: document.getElementById('ann-content').value
+      };
+
+      try {
+        const res = await fetch('/api/announcements', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msgEl.style.color = '#2dd4bf';
+          msgEl.textContent = 'Announcement published!';
+          e.target.reset();
+          loadAnnouncementsAndSessionOptions();
+        } else {
+          msgEl.style.color = '#f43f5e';
+          msgEl.textContent = data.message || 'Error publishing announcement';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    window.deleteAnnouncement = async function(id) {
+      if (!confirm('Delete this announcement?')) return;
+      try {
+        const res = await fetch(`/api/announcements?id=${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) loadAnnouncementsAndSessionOptions();
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    // Load initial stats
+    loadOverviewStats();
   </script>
 </body>
 </html>

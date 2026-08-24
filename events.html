@@ -73,41 +73,64 @@
             <p class="section-label">UPCOMING & REGULAR EVENTS</p>
             <h2>Learning experiences designed to inspire and challenge</h2>
           </div>
-          <div class="card-grid">
-
+          <div class="card-grid" id="events-grid-container">
             <article class="card">
-              <span class="team-role" style="color: var(--icpc-red); font-weight: bold;">Upcoming: Wed, 26 Aug 2026</span>
-              <h3>Wednesday Training Session</h3>
-              <p>Join us this Wednesday for an intensive competitive programming training session focusing on core algorithms. Attendance will be tracked by the admin team.</p>
-            </article>
-            <article class="card">
-              <span class="team-role" style="color: var(--icpc-blue);">Weekly</span>
-              <h3>Practice Sessions</h3>
-              <p>Solve algorithm sets collaboratively and discuss multiple code approaches with peers.</p>
-            </article>
-            <article class="card">
-              <span class="team-role" style="color: var(--icpc-red);">Interactive</span>
-              <h3>Technical Workshops</h3>
-              <p>Deep dives into recursion, dynamic programming, graph theory, and computational geometry.</p>
-            </article>
-            <article class="card">
-              <span class="team-role" style="color: var(--icpc-blue);">Contests</span>
-              <h3>Mock Contests</h3>
-              <p>Experience real-time high pressure scenarios using standard ICPC platforms and strict time limits.</p>
-            </article>
-            <article class="card">
-              <span class="team-role" style="color: var(--icpc-yellow);">Monthly</span>
-              <h3>Club Meeting</h3>
-              <p>Align on strategies, welcome new members, and review outstanding competitive achievements.</p>
-            </article>
-            <article class="card">
-              <span class="team-role" style="color: var(--icpc-red);">Upcoming Flagship</span>
-              <h3>REVDEBUG 2026</h3>
-              <p>An exclusive reverse-debugging and algorithmic event open for all departments and years.</p>
+              <span class="team-role" style="color: var(--icpc-red); font-weight: bold;">Loading events...</span>
+              <h3>Club Events</h3>
+              <p>Fetching scheduled sessions from database...</p>
             </article>
           </div>
         </div>
       </section>
+
+      <script>
+        async function loadDynamicEvents() {
+          try {
+            const res = await fetch('/api/sessions');
+            const sessions = await res.json();
+            const container = document.getElementById('events-grid-container');
+
+            if (Array.isArray(sessions) && sessions.length > 0) {
+              container.innerHTML = '';
+              sessions.forEach(s => {
+                const startDateStr = new Date(s.start_time).toLocaleString();
+                const st = s.calculated_status || 'UPCOMING';
+                const colorMap = { 'UPCOMING': 'var(--icpc-red)', 'ONGOING': '#2dd4bf', 'COMPLETED': '#94a3b8', 'CANCELLED': '#f43f5e' };
+                
+                container.innerHTML += `
+                  <article class="card">
+                    <span class="team-role" style="color: ${colorMap[st] || 'var(--icpc-blue)'}; font-weight: bold;">${st}: ${startDateStr}</span>
+                    <h3>${s.title}</h3>
+                    <p>${s.description || 'Join us for this competitive programming event.'}</p>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 8px;">Location: ${s.location || 'Main Campus'}</p>
+                  </article>
+                `;
+              });
+            } else {
+              container.innerHTML = `
+                <article class="card">
+                  <span class="team-role" style="color: var(--icpc-red); font-weight: bold;">Upcoming: Wed, 26 Aug 2026</span>
+                  <h3>Wednesday Training Session</h3>
+                  <p>Join us this Wednesday for an intensive competitive programming training session focusing on core algorithms.</p>
+                </article>
+                <article class="card">
+                  <span class="team-role" style="color: var(--icpc-blue);">Weekly</span>
+                  <h3>Practice Sessions</h3>
+                  <p>Solve algorithm sets collaboratively and discuss multiple code approaches with peers.</p>
+                </article>
+                <article class="card">
+                  <span class="team-role" style="color: var(--icpc-red);">Interactive</span>
+                  <h3>Technical Workshops</h3>
+                  <p>Deep dives into recursion, dynamic programming, graph theory, and computational geometry.</p>
+                </article>
+              `;
+            }
+          } catch (err) {
+            console.error('Error loading events:', err);
+          }
+        }
+        document.addEventListener('DOMContentLoaded', loadDynamicEvents);
+      </script>
 
       <!-- Event Highlights & Gallery Banner -->
       <section class="section alt-section">
