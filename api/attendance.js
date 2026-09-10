@@ -8,34 +8,50 @@ const pool = new Pool({
 
 const JWT_SECRET = process.env.JWT_SECRET || 'icpc-club-secret-key';
 
-function verifyToken(req) {
+async function verifyUserAndRole(req) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
   try {
-    return jwt.verify(authHeader.split(' ')[1], JWT_SECRET);
+    const decoded = jwt.verify(authHeader.split(' ')[1], JWT_SECRET);
+    const userRes = await pool.query(
+      'SELECT id, role, is_active FROM users WHERE id = $1',
+      [decoded.id]
+    );
+    if (userRes.rows.length === 0 || !userRes.rows[0].is_active) return null;
+    return { ...decoded, role: (userRes.rows[0].role || '').toUpperCase() };
   } catch (err) {
     return null;
   }
 }
 
 export default async function handler(req, res) {
-  const user = verifyToken(req);
+  const dbUser = await verifyUserAndRole(req);
   const { session_id, action } = req.query;
 
   // GET /api/attendance?action=me -> Logged in member's own attendance profile & summary
   if (req.method === 'GET' && action === 'me') {
-    if (!user) {
+    if (!dbUser) {
       return res.status(401).json({ message: 'Unauthorized: Authentication required' });
     }
 
     try {
       // Fetch user's club_member_id
-      const uRes = await pool.query(`SELECT club_member_id FROM users WHERE id = $1`, [user.id]);
+      const uRes = await pool.query(`SELECT club_member_id FROM users WHERE id = $1`, [dbUser.id]);
       if (uRes.rows.length === 0) {
         return res.status(404).json({ message: 'Member record not found' });
       }
 
       const cmId = uRes.rows[0].club_member_id;
+
+      if (!cmId) {
+        return res.status(200).json({
+          total_sessions: 0,
+          present_count: 0,
+          absent_count: 0,
+          attendance_percentage: 0,
+          history: []
+        });
+      }
 
       // Attendance history for this member
       const attHistory = await pool.query(
@@ -71,10 +87,11 @@ export default async function handler(req, res) {
     }
   }
 
-  // GET /api/attendance?session_id=X -> Admin fetches session attendance roster
+  // GET /api/attendance?session_id=X -> Admin/Coordinator fetches session attendance roster
   if (req.method === 'GET') {
-    if (!user || user.role !== 'ADMIN') {
-      return res.status(403).json({ message: 'Forbidden: Admins only' });
+    const isAllowed = dbUser && ['ADMIN', 'COORDINATOR'].includes(dbUser.role);
+    if (!isAllowed) {
+      return res.status(403).json({ message: 'Forbidden: Admins & Coordinators only' });
     }
 
     if (!session_id) {
@@ -98,10 +115,11 @@ export default async function handler(req, res) {
     }
   }
 
-  // POST /api/attendance -> Admin marks/upserts attendance
+  // POST /api/attendance -> Admin/Coordinator marks/upserts attendance
   if (req.method === 'POST') {
-    if (!user || user.role !== 'ADMIN') {
-      return res.status(403).json({ message: 'Forbidden: Admins only' });
+    const isAllowed = dbUser && ['ADMIN', 'COORDINATOR'].includes(dbUser.role);
+    if (!isAllowed) {
+      return res.status(403).json({ message: 'Forbidden: Admins & Coordinators only' });
     }
 
     const { session_id: sId, club_member_id, student_id, status } = req.body;
@@ -129,7 +147,7 @@ export default async function handler(req, res) {
          ON CONFLICT (session_id, club_member_id)
          DO UPDATE SET status = EXCLUDED.status, marked_by = EXCLUDED.marked_by, marked_at = CURRENT_TIMESTAMP
          RETURNING *`,
-        [targetSessionId, cmId, attStatus, user.id]
+        [targetSessionId, cmId, attStatus, dbUser.id]
       );
 
       return res.status(200).json(result.rows[0]);

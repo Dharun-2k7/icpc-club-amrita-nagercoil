@@ -21,7 +21,24 @@ async function initDB() {
   try {
     console.log('Connecting to Neon PostgreSQL database...');
 
-    // 1. Create club_members table
+    // 1. Create admin_roster table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS admin_roster (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        student_id VARCHAR(255) UNIQUE NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        role VARCHAR(50) DEFAULT 'ADMIN',
+        department VARCHAR(255),
+        year VARCHAR(50),
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // 2. Create club_members table (Approved normal members whitelist)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS club_members (
         id SERIAL PRIMARY KEY,
@@ -37,11 +54,12 @@ async function initDB() {
       );
     `);
 
-    // 2. Create users table
+    // 3. Create users table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         club_member_id INTEGER UNIQUE REFERENCES club_members(id) ON DELETE CASCADE,
+        admin_id INTEGER UNIQUE REFERENCES admin_roster(id) ON DELETE CASCADE,
         email VARCHAR(255) UNIQUE NOT NULL,
         student_id VARCHAR(255) UNIQUE NOT NULL,
         name VARCHAR(255) NOT NULL,
@@ -53,7 +71,13 @@ async function initDB() {
       );
     `);
 
-    // 3. Create sessions table
+    // Add admin_id column to users if table already existed without it
+    await pool.query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS admin_id INTEGER UNIQUE REFERENCES admin_roster(id) ON DELETE CASCADE;
+    `);
+
+    // 4. Create sessions table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS sessions (
         id SERIAL PRIMARY KEY,
@@ -70,7 +94,7 @@ async function initDB() {
       );
     `);
 
-    // 4. Create attendance table
+    // 5. Create attendance table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS attendance (
         id SERIAL PRIMARY KEY,
@@ -83,7 +107,7 @@ async function initDB() {
       );
     `);
 
-    // 5. Create announcements table
+    // 6. Create announcements table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS announcements (
         id SERIAL PRIMARY KEY,
@@ -99,109 +123,170 @@ async function initDB() {
       );
     `);
 
-    // 6. Seed official ICPC Club members roster
-    console.log('Seeding official ICPC Club members roster...');
-    const officialRoster = [
-      { name: 'Sanya Singh', email: 'sanyasingh20070406@gmail.com', student_id: 'NC.SC.U4CSE25140', department: 'B.Tech CSE', year: '2026-2030', handle: 'sanya_s04' },
-      { name: 'Dharun Kaarthick S', email: 'nc.sc.u4cse24012@amrita.edu', student_id: 'NC.SC.U4CSE24012', department: 'BTech CSE', year: '2024-2028', handle: 'erikasa' },
-      { name: 'Suhashini K', email: 'suhashini.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25010', department: 'B.Tech CSE', year: '2025-2029', handle: 'suhashini_k' },
-      { name: 'Babideeran G', email: 'babideeran.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25011', department: 'B.Tech CSE', year: '2025-2029', handle: 'babideeran_g' },
-      { name: 'Sumanth Varada', email: 'sumanth.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25012', department: 'B.Tech CSE', year: '2025-2029', handle: 'sumanth_v' },
-      { name: 'S Sheik Wasim', email: 'sheik.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25013', department: 'B.Tech CYS', year: '2025-2029', handle: 'sheik_wasim' },
-      { name: 'Theetchith T', email: 'theetchith.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25014', department: 'B.Tech CSE', year: '2025-2029', handle: 'theetchith_t' },
-      { name: 'Sonam Kumari', email: 'sonam.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25015', department: 'B.Tech CSE', year: '2025-2029', handle: 'sonam_k' },
-      { name: 'Dharshana Senthilkumar', email: 'dharshana.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25016', department: 'B.Tech AIE', year: '2025-2029', handle: 'dharshana_s' },
-      { name: 'Kappala Shashank', email: 'shashank.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25017', department: 'B.Tech CSE', year: '2025-2029', handle: 'shashank_k' },
-      { name: 'Deep Shikha', email: 'deepshikha.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25018', department: 'B.Tech CSE', year: '2025-2029', handle: 'deep_shikha' },
-      { name: 'F Samuel Jabanezer', email: 'samuel.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25019', department: 'B.Tech CSE', year: '2025-2029', handle: 'samuel_j' },
-      { name: 'Chinmayi Krishna Vybhavi Mangipudi', email: 'chinmayi.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25020', department: 'B.Tech CSE', year: '2025-2029', handle: 'chinmayi_m' },
-      { name: 'Mari Balaji AS', email: 'maribalaji.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25021', department: 'B.Tech CSE', year: '2025-2029', handle: 'maribalaji_as' },
-      { name: 'Ganeshkumar V', email: 'ganeshkumar.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25022', department: 'B.Tech CSE', year: '2025-2029', handle: 'ganeshkumar_v' }
+    // 7. Seed Official Admin / Coordinator List
+    console.log('Seeding official Admin / Coordinator roster...');
+    const adminRosterData = [
+      { name: 'Thannamal Indu V', title: 'Head Coordinator', role: 'COORDINATOR', email: 'indu.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25008', department: 'B.Tech CSE', year: '2025-2029' },
+      { name: 'Supriya Mam', title: 'Faculty Coordinator', role: 'FACULTY', email: 'supriya.icpc@amrita.edu', student_id: 'NC.SC.FAC25009', department: 'Faculty', year: 'Staff' },
+      { name: 'Mr Dharun Kaarthick', title: 'ICPC Club Coordinator', role: 'ADMIN', email: 'nc.sc.u4cse24012@nc.students.amrita.edu', student_id: 'NC.SC.U4CSE24012', department: 'BTech CSE', year: '2024-2028' },
+      { name: 'Suhashini K', title: 'Vice Lead', role: 'ADMIN', email: 'suhashini.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25010', department: 'B.Tech CSE', year: '2025-2029' },
+      { name: 'Babideeran G', title: 'Vice Lead', role: 'ADMIN', email: 'babideeran.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25011', department: 'B.Tech CSE', year: '2025-2029' },
+      { name: 'Sanya Singh', title: 'Technical Lead', role: 'ADMIN', email: 'nc.sc.u4cse25140@nc.students.amrita.edu', student_id: 'NC.SC.U4CSE25140', department: 'B.Tech CSE', year: '2026-2030' },
+      { name: 'Sumanth Varada', title: 'Technical Lead', role: 'ADMIN', email: 'sumanth.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25012', department: 'B.Tech CSE', year: '2025-2029' },
+      { name: 'S Sheik Wasim', title: 'Technical Lead', role: 'ADMIN', email: 'sheik.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25013', department: 'B.Tech CYS', year: '2025-2029' },
+      { name: 'Theetchith T', title: 'Problem Setter Lead', role: 'ADMIN', email: 'theetchith.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25014', department: 'B.Tech CSE', year: '2025-2029' },
+      { name: 'Sonam Kumari', title: 'Problem Setter Lead', role: 'ADMIN', email: 'sonam.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25015', department: 'B.Tech CSE', year: '2025-2029' },
+      { name: 'Dharshana Senthilkumar', title: 'Training & Mentorship Lead', role: 'ADMIN', email: 'dharshana.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25016', department: 'B.Tech AIE', year: '2025-2029' },
+      { name: 'Kappala Shashank', title: 'Training & Mentorship Lead', role: 'ADMIN', email: 'shashank.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25017', department: 'B.Tech CSE', year: '2025-2029' },
+      { name: 'Deep Shikha', title: 'Training & Mentorship Lead', role: 'ADMIN', email: 'deepshikha.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25018', department: 'B.Tech CSE', year: '2025-2029' },
+      { name: 'F Samuel Jabanezer', title: 'Contest Lead', role: 'ADMIN', email: 'samuel.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25019', department: 'B.Tech CSE', year: '2025-2029' },
+      { name: 'Chinmayi Krishna Vybhavi Mangipudi', title: 'Contest Lead', role: 'ADMIN', email: 'chinmayi.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25020', department: 'B.Tech CSE', year: '2025-2029' },
+      { name: 'Mari Balaji AS', title: 'Events & Operations Lead', role: 'ADMIN', email: 'maribalaji.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25021', department: 'B.Tech CSE', year: '2025-2029' },
+      { name: 'Ganeshkumar V', title: 'Research & Resources Lead', role: 'ADMIN', email: 'ganeshkumar.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25022', department: 'B.Tech CSE', year: '2025-2029' }
     ];
 
-    // Also load the parsed members from PDF
-    let extraMembers = [];
-    if (fs.existsSync('./members.json')) {
-      try {
-        extraMembers = JSON.parse(fs.readFileSync('./members.json', 'utf8'));
-      } catch(e) {
-        console.error("Could not load members.json", e);
-      }
+    for (const a of adminRosterData) {
+      await pool.query(
+        `INSERT INTO admin_roster (name, email, student_id, title, role, department, year)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (student_id) DO UPDATE SET 
+           email = EXCLUDED.email,
+           name = EXCLUDED.name,
+           title = EXCLUDED.title,
+           role = EXCLUDED.role,
+           department = EXCLUDED.department,
+           year = EXCLUDED.year`,
+        [a.name, a.email, a.student_id, a.title, a.role, a.department, a.year]
+      );
+
+      // Clean up: Remove admin/coordinator from club_members so they are separated
+      await pool.query(
+        `DELETE FROM club_members WHERE LOWER(email) = LOWER($1) OR LOWER(student_id) = LOWER($2)`,
+        [a.email, a.student_id]
+      );
     }
 
-    const allMembers = [...officialRoster, ...extraMembers];
+    // 8. Seed Approved Club Members whitelist (for normal student public registration)
+    console.log('Seeding approved club members whitelist...');
+    const approvedMembers = [
+      { name: 'Aditya Kumar', email: 'aditya.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25001', department: 'B.Tech CSE', year: '2025-2029', handle: 'aditya_icpc' },
+      { name: 'Kavya R', email: 'kavya.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25002', department: 'B.Tech CYS', year: '2025-2029', handle: 'kavya_code' },
+      { name: 'Rahul M', email: 'rahul.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25003', department: 'B.Tech AIE', year: '2025-2029', handle: 'rahul_algo' },
+      { name: 'Priya S', email: 'priya.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25004', department: 'B.Tech CSE', year: '2025-2029', handle: 'priya_p' },
+      { name: 'Karthik N', email: 'karthik.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25005', department: 'B.Tech CSE', year: '2025-2029', handle: 'karthik_n' }
+    ];
 
-    for (const m of allMembers) {
+    for (const m of approvedMembers) {
       await pool.query(
         `INSERT INTO club_members (email, student_id, name, department, year, codeforces_handle)
-           VALUES ($1, $2, $3, $4, $5, $6)
-           ON CONFLICT (email) DO UPDATE SET 
-             student_id = EXCLUDED.student_id,
-             name = EXCLUDED.name,
-             codeforces_handle = EXCLUDED.codeforces_handle`,
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (email) DO UPDATE SET 
+           student_id = EXCLUDED.student_id,
+           name = EXCLUDED.name,
+           codeforces_handle = EXCLUDED.codeforces_handle`,
         [m.email, m.student_id, m.name, m.department, m.year, m.handle || '']
       );
     }
 
-
-    // 7. Seed Initial Approved Club Members if list is empty
-    const countMembers = await pool.query(`SELECT COUNT(*) FROM club_members`);
-  if (parseInt(countMembers.rows[0].count, 10) === 0) {
-    console.log('Seeding initial approved club members list...');
-    const defaultMembers = [
-      { name: 'Sanya Singh', email: 'sanyasingh20070406@gmail.com', student_id: 'NC.SC.U4CSE25140', department: 'B.Tech CSE', year: '2026-2030', handle: 'sanya_s04' },
-      { name: 'Dharun Kaarthick S', email: 'nc.sc.u4cse24012@amrita.edu', student_id: 'NC.SC.U4CSE24012', department: 'BTech CSE', year: '2024-2028', handle: 'erikasa' },
-      { name: 'Aditya Kumar', email: 'aditya.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25001', department: 'B.Tech CSE', year: '2025-2029', handle: 'aditya_icpc' },
-      { name: 'Kavya R', email: 'kavya.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25002', department: 'B.Tech CYS', year: '2025-2029', handle: 'kavya_code' },
-      { name: 'Rahul M', email: 'rahul.icpc@amrita.edu', student_id: 'NC.SC.U4CSE25003', department: 'B.Tech AIE', year: '2025-2029', handle: 'rahul_algo' }
-    ];
-
-    for (const m of defaultMembers) {
-      await pool.query(
-        `INSERT INTO club_members (email, student_id, name, department, year, codeforces_handle)
-           VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING`,
-        [m.email, m.student_id, m.name, m.department, m.year, m.handle]
-      );
-    }
-  }
-
-  // 8. Seed Default Admin User if no admin exists
-  const countAdmins = await pool.query(`SELECT COUNT(*) FROM users WHERE role = 'ADMIN'`);
-  if (parseInt(countAdmins.rows[0].count, 10) === 0) {
-    console.log('Creating default admin account...');
-    const adminEmail = 'sanyasingh20070406@gmail.com';
-    const adminMember = await pool.query(`SELECT * FROM club_members WHERE email = $1 OR student_id = 'NC.SC.U4CSE25140'`, [adminEmail]);
-
-    let cmId;
-    if (adminMember.rows.length === 0) {
-      const insCM = await pool.query(
-        `INSERT INTO club_members (email, student_id, name, department, year, codeforces_handle)
-           VALUES ($1, 'NC.SC.U4CSE25140', 'Sanya', 'B.Tech CSE', '2026-2030', 'sanya_s04')
-           RETURNING id`,
-        [adminEmail]
-      );
-      cmId = insCM.rows[0].id;
-    } else {
-      cmId = adminMember.rows[0].id;
-    }
-
+    // 9. Provision Admin Accounts for Sanya Singh & Dharun Kaarthick
+    console.log('Provisioning Admin User Accounts for Sanya Singh & Dharun Kaarthick...');
     const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash('admin123', salt);
+    const defaultHash = await bcrypt.hash('admin123', salt);
+
+    // Sanya Singh Admin Account
+    const sanyaAdmin = await pool.query(`SELECT id FROM admin_roster WHERE student_id = 'NC.SC.U4CSE25140' OR LOWER(email) LIKE '%sanya%'`);
+    const sanyaArId = sanyaAdmin.rows.length > 0 ? sanyaAdmin.rows[0].id : null;
+    const sanyaEmail = 'nc.sc.u4cse25140@nc.students.amrita.edu';
 
     await pool.query(
-      `INSERT INTO users (club_member_id, email, student_id, name, password_hash, role)
-         VALUES ($1, $2, 'NC.SC.U4CSE25140', 'Sanya', $3, 'ADMIN')
-         ON CONFLICT (email) DO UPDATE SET role = 'ADMIN', password_hash = EXCLUDED.password_hash`,
-      [cmId, adminEmail, hash]
+      `INSERT INTO users (admin_id, email, student_id, name, password_hash, role)
+       VALUES ($1, $2, 'NC.SC.U4CSE25140', 'Sanya Singh', $3, 'ADMIN')
+       ON CONFLICT (student_id) DO UPDATE SET 
+         role = 'ADMIN', 
+         email = EXCLUDED.email, 
+         password_hash = EXCLUDED.password_hash, 
+         admin_id = EXCLUDED.admin_id`,
+      [sanyaArId, sanyaEmail, defaultHash]
     );
-  }
 
-  console.log('Database initialization & migrations completed successfully!');
-} catch (error) {
-  console.error('Database initialization error:', error);
-} finally {
-  pool.end();
-}
+    // Dharun Kaarthick Admin Account
+    const dharunAdmin = await pool.query(`SELECT id FROM admin_roster WHERE student_id = 'NC.SC.U4CSE24012' OR LOWER(email) LIKE '%dharun%'`);
+    const dharunArId = dharunAdmin.rows.length > 0 ? dharunAdmin.rows[0].id : null;
+    const dharunEmail = 'nc.sc.u4cse24012@nc.students.amrita.edu';
+
+    await pool.query(
+      `INSERT INTO users (admin_id, email, student_id, name, password_hash, role)
+       VALUES ($1, $2, 'NC.SC.U4CSE24012', 'Dharun Kaarthick', $3, 'ADMIN')
+       ON CONFLICT (student_id) DO UPDATE SET 
+         role = 'ADMIN', 
+         email = EXCLUDED.email, 
+         password_hash = EXCLUDED.password_hash, 
+         admin_id = EXCLUDED.admin_id`,
+      [dharunArId, dharunEmail, defaultHash]
+    );
+
+    // 10. Keep ONLY ONE single Beginner Friendly Online CP Session for today (18:00 - 19:00 of 28/08/26)
+    console.log('Ensuring ONLY ONE single Beginner Friendly Online CP Session exists for 28/08/26 18:00 - 19:00...');
+    const startTimeISO = '2026-08-28T12:30:00.000Z'; // 18:00 IST
+    const endTimeISO = '2026-08-28T13:30:00.000Z';   // 19:00 IST
+
+    const beginnerSessions = await pool.query(`SELECT id FROM sessions WHERE LOWER(title) LIKE '%beginner%' ORDER BY id ASC`);
+    
+    if (beginnerSessions.rows.length > 0) {
+      const keepId = beginnerSessions.rows[0].id;
+      // Delete any duplicate sessions
+      if (beginnerSessions.rows.length > 1) {
+        const deleteIds = beginnerSessions.rows.slice(1).map(r => r.id);
+        await pool.query(`DELETE FROM sessions WHERE id = ANY($1::int[])`, [deleteIds]);
+      }
+
+      await pool.query(
+        `UPDATE sessions 
+         SET title = 'Beginner Friendly Online CP Session',
+             description = 'An interactive, beginner-friendly online session introducing competitive programming fundamentals, problem-solving techniques, C++/Python setups, and Codeforces practice paths.',
+             session_type = 'ONLINE_SESSION',
+             start_time = $1,
+             end_time = $2,
+             location = 'Online (Google Meet)'
+         WHERE id = $3`,
+        [startTimeISO, endTimeISO, keepId]
+      );
+    } else {
+      await pool.query(
+        `INSERT INTO sessions (title, description, session_type, start_time, end_time, location, status)
+         VALUES ('Beginner Friendly Online CP Session', 'An interactive, beginner-friendly online session introducing competitive programming fundamentals, problem-solving techniques, C++/Python setups, and Codeforces practice paths.', 'ONLINE_SESSION', $1, $2, 'Online (Google Meet)', 'UPCOMING')`,
+        [startTimeISO, endTimeISO]
+      );
+    }
+
+    // Clean up duplicate announcements as well
+    const beginnerAnns = await pool.query(`SELECT id FROM announcements WHERE LOWER(title) LIKE '%beginner%' ORDER BY id ASC`);
+    if (beginnerAnns.rows.length > 1) {
+      const deleteAnnIds = beginnerAnns.rows.slice(1).map(r => r.id);
+      await pool.query(`DELETE FROM announcements WHERE id = ANY($1::int[])`, [deleteAnnIds]);
+    }
+    if (beginnerAnns.rows.length > 0) {
+      await pool.query(
+        `UPDATE announcements 
+         SET title = 'Beginner Friendly Online CP Session Today (18:00 - 19:00)',
+             content = 'Join us today, Friday 28/08/26 from 18:00 to 19:00 IST for an interactive Beginner Friendly Online CP Session.'
+         WHERE id = $1`,
+        [beginnerAnns.rows[0].id]
+      );
+    } else {
+      await pool.query(
+        `INSERT INTO announcements (title, content, announcement_type, publish_date)
+         VALUES ('Beginner Friendly Online CP Session Today (18:00 - 19:00)', 'Join us today, Friday 28/08/26 from 18:00 to 19:00 IST for an interactive Beginner Friendly Online CP Session.', 'SESSION', CURRENT_TIMESTAMP)`
+      );
+    }
+
+    console.log('Database initialization & migrations completed successfully!');
+  } catch (error) {
+    console.error('Database initialization error:', error);
+  } finally {
+    pool.end();
+  }
 }
 
 initDB();
+

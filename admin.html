@@ -24,12 +24,17 @@
       margin-bottom: 24px;
       padding-bottom: 16px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      flex-wrap: wrap;
+      gap: 16px;
     }
     .admin-tabs {
       display: flex;
       gap: 10px;
       margin-bottom: 24px;
       flex-wrap: wrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
     }
     .tab-btn {
       background: rgba(255, 255, 255, 0.08);
@@ -40,6 +45,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
     .tab-btn:hover {
       background: rgba(255, 255, 255, 0.15);
@@ -58,11 +64,25 @@
     }
     .grid-2 {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 20px;
     }
-    @media (max-width: 768px) {
+    @media (max-width: 992px) {
+      .admin-container {
+        padding: 16px;
+        margin-top: 20px;
+      }
       .grid-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .tab-btn {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+      }
     }
     .stat-card {
       background: rgba(255, 255, 255, 0.05);
@@ -145,11 +165,11 @@
     </div>
 
     <div class="admin-tabs">
-      <button class="tab-btn active" onclick="switchTab('overview-tab')">Overview</button>
-      <button class="tab-btn" onclick="switchTab('members-tab')">Manage Members</button>
-      <button class="tab-btn" onclick="switchTab('sessions-tab')">Manage Sessions</button>
-      <button class="tab-btn" onclick="switchTab('attendance-tab')">Track Attendance</button>
-      <button class="tab-btn" onclick="switchTab('announcements-tab')">Announcements</button>
+      <button class="tab-btn active" onclick="switchTab('overview-tab', this)">Overview</button>
+      <button class="tab-btn" onclick="switchTab('members-tab', this)">Manage Members</button>
+      <button class="tab-btn" onclick="switchTab('sessions-tab', this)">Manage Sessions</button>
+      <button class="tab-btn" onclick="switchTab('attendance-tab', this)">Track Attendance</button>
+      <button class="tab-btn" onclick="switchTab('announcements-tab', this)">Announcements</button>
     </div>
 
     <!-- 1. OVERVIEW TAB -->
@@ -296,10 +316,16 @@
 
     <!-- 4. ATTENDANCE TAB -->
     <div id="attendance-tab" class="tab-content">
-      <h3>Mark Session Attendance</h3>
-      <div class="form-group" style="margin-top: 12px;">
-        <label>Select Session</label>
-        <select id="attendance-session-select" onchange="loadAttendanceRoster()">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
+        <h3 style="margin: 0;">Mark Session Attendance</h3>
+        <div style="min-width: 280px; flex: 1; max-width: 450px;" id="attendance-search-group">
+          <input type="text" id="attendance-search-input" placeholder="🔍 Search member by name, roll no, or dept..." oninput="filterAttendanceTable()" style="width: 100%; padding: 10px 14px; background: rgba(15, 23, 42, 0.9); border: 1px solid #0D9488; border-radius: 8px; color: #fff; font-size: 0.95rem; box-shadow: 0 0 12px rgba(13, 148, 136, 0.2);" />
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label style="font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block;">Select Session *</label>
+        <select id="attendance-session-select" onchange="loadAttendanceRoster()" style="width: 100%; padding: 10px 14px; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: #fff;">
           <option value="">-- Select a Session --</option>
         </select>
       </div>
@@ -371,19 +397,40 @@
 
   <script>
     const token = localStorage.getItem('icpc_token');
-    const userStr = localStorage.getItem('icpc_user');
-    
-    if (!token || !userStr) {
+    if (!token) {
       window.location.href = 'login.html';
     }
 
-    const currentUser = JSON.parse(userStr);
-    if (currentUser.role !== 'ADMIN' && currentUser.role !== 'admin') {
-      alert('Access Denied: Admin privileges required.');
-      window.location.href = 'dashboard.html';
-    }
+    let currentUser = null;
 
-    document.getElementById('admin-info').textContent = `Admin: ${currentUser.name}`;
+    async function verifyAdminAuth() {
+      try {
+        const res = await fetch('/api/auth?action=me', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) {
+          localStorage.removeItem('icpc_token');
+          localStorage.removeItem('icpc_user');
+          window.location.href = 'login.html';
+          return false;
+        }
+
+        currentUser = await res.json();
+        const role = (currentUser.role || '').toUpperCase();
+        if (role !== 'ADMIN') {
+          alert('Access Denied: Admin privileges required.');
+          window.location.href = 'dashboard.html';
+          return false;
+        }
+
+        document.getElementById('admin-info').textContent = `Admin: ${currentUser.name}`;
+        return true;
+      } catch (err) {
+        console.error('Error verifying admin authentication:', err);
+        window.location.href = 'login.html';
+        return false;
+      }
+    }
 
     document.getElementById('admin-logout-btn').addEventListener('click', () => {
       localStorage.removeItem('icpc_token');
@@ -391,11 +438,17 @@
       window.location.href = 'index.html';
     });
 
-    function switchTab(tabId) {
+    function switchTab(tabId, btn) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      event.target.classList.add('active');
+      const targetTab = document.getElementById(tabId);
+      if (targetTab) targetTab.classList.add('active');
+      
+      if (btn) {
+        btn.classList.add('active');
+      } else if (typeof event !== 'undefined' && event && event.target) {
+        event.target.classList.add('active');
+      }
 
       if (tabId === 'overview-tab') loadOverviewStats();
       if (tabId === 'members-tab') loadMembersRoster();
@@ -655,35 +708,38 @@
         const sessions = await res.json();
         const select = document.getElementById('attendance-session-select');
         select.innerHTML = '<option value="">-- Select a Session --</option>';
-        if (Array.isArray(sessions)) {
+        if (Array.isArray(sessions) && sessions.length > 0) {
           sessions.forEach(s => {
             const d = new Date(s.start_time).toLocaleString();
             select.innerHTML += `<option value="${s.id}">${s.title} (${d})</option>`;
           });
+          // Auto-select the first (latest) session if not already selected
+          if (!select.value && sessions.length > 0) {
+            select.value = sessions[0].id;
+          }
         }
+        await loadAttendanceRoster();
       } catch (err) {
-        console.error(err);
+        console.error('Error loading sessions select:', err);
+        loadAttendanceRoster();
       }
     }
 
-    async function loadAttendanceRoster() {
-      const sessionId = document.getElementById('attendance-session-select').value;
-      const table = document.getElementById('attendance-table');
-      const tbody = document.getElementById('attendance-tbody');
-      
-      if (!sessionId) {
-        table.style.display = 'none';
-        return;
-      }
+    let currentAttendanceData = null;
 
+    async function loadAttendanceRoster() {
+      const selectEl = document.getElementById('attendance-session-select');
+      const sessionId = selectEl ? selectEl.value : '';
+      const table = document.getElementById('attendance-table');
+      
       try {
         const [resMembers, resAtt] = await Promise.all([
           fetch('/api/members', { headers: { 'Authorization': 'Bearer ' + token } }),
-          fetch(`/api/attendance?session_id=${sessionId}`, { headers: { 'Authorization': 'Bearer ' + token } })
+          sessionId ? fetch(`/api/attendance?session_id=${sessionId}`, { headers: { 'Authorization': 'Bearer ' + token } }) : Promise.resolve({ ok: true, json: async () => [] })
         ]);
 
-        const members = await resMembers.json();
-        const attendanceList = await resAtt.json();
+        const members = resMembers.ok ? await resMembers.json() : [];
+        const attendanceList = (resAtt && resAtt.ok) ? await resAtt.json() : [];
 
         const attMap = {};
         if (Array.isArray(attendanceList)) {
@@ -692,35 +748,73 @@
           });
         }
 
-        tbody.innerHTML = '';
-        if (Array.isArray(members)) {
-          members.forEach(m => {
-            const currentStatus = (attMap[m.id] || 'ABSENT').toUpperCase();
-            const isPresent = currentStatus === 'PRESENT';
+        currentAttendanceData = {
+          sessionId,
+          members: Array.isArray(members) ? members : [],
+          attMap
+        };
 
-            tbody.innerHTML += `
-              <tr>
-                <td><strong>${m.name}</strong></td>
-                <td>${m.student_id}</td>
-                <td>${m.department || 'N/A'}</td>
-                <td id="att-status-${m.id}" style="color: ${isPresent ? '#2dd4bf' : '#f43f5e'}; font-weight:700;">
-                  ${currentStatus}
-                </td>
-                <td>
-                  <button onclick="markMemberAttendance(${sessionId}, ${m.id}, 'PRESENT')" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;">Mark Present</button>
-                  <button onclick="markMemberAttendance(${sessionId}, ${m.id}, 'ABSENT')" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px; border-color: #f43f5e; color: #f43f5e;">Mark Absent</button>
-                </td>
-              </tr>
-            `;
-          });
-        }
-        table.style.display = 'table';
+        renderAttendanceTable();
+        if (table) table.style.display = 'table';
       } catch (err) {
-        console.error(err);
+        console.error('Error loading attendance roster:', err);
       }
     }
 
+    function filterAttendanceTable() {
+      renderAttendanceTable();
+    }
+
+    function renderAttendanceTable() {
+      if (!currentAttendanceData) return;
+      const { sessionId, members, attMap } = currentAttendanceData;
+      const searchQuery = (document.getElementById('attendance-search-input')?.value || '').toLowerCase().trim();
+      const tbody = document.getElementById('attendance-tbody');
+      if (!tbody) return;
+      
+      tbody.innerHTML = '';
+      
+      const filtered = members.filter(m => {
+        if (!searchQuery) return true;
+        const nameMatch = m.name && m.name.toLowerCase().includes(searchQuery);
+        const rollMatch = m.student_id && m.student_id.toLowerCase().includes(searchQuery);
+        const deptMatch = m.department && m.department.toLowerCase().includes(searchQuery);
+        return nameMatch || rollMatch || deptMatch;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 20px;">No members found matching "${searchQuery}"</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(m => {
+        const currentStatus = (attMap[m.id] || 'ABSENT').toUpperCase();
+        const isPresent = currentStatus === 'PRESENT';
+
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${m.name}</strong></td>
+            <td><code style="color: #38bdf8;">${m.student_id}</code></td>
+            <td>${m.department || 'N/A'}</td>
+            <td id="att-status-${m.id}" style="color: ${isPresent ? '#2dd4bf' : '#f43f5e'}; font-weight:700;">
+              ${sessionId ? currentStatus : 'NO SESSION SELECTED'}
+            </td>
+            <td>
+              <button onclick="markMemberAttendance(${sessionId || 'null'}, ${m.id}, 'PRESENT')" class="btn btn-outline" style="padding: 5px 12px; font-size: 11px; margin-right: 4px; ${isPresent && sessionId ? 'background: #0D9488; border-color: #0D9488; color: #fff; font-weight: bold;' : 'color: #cbd5e1;'}">Present</button>
+              <button onclick="markMemberAttendance(${sessionId || 'null'}, ${m.id}, 'ABSENT')" class="btn btn-outline" style="padding: 5px 12px; font-size: 11px; ${!isPresent && sessionId ? 'background: #e11d48; border-color: #e11d48; color: #fff; font-weight: bold;' : 'border-color: rgba(244,63,94,0.4); color: #f43f5e;'}" >Absent</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
     window.markMemberAttendance = async function(sessionId, memberId, status) {
+      const activeSessionId = sessionId || document.getElementById('attendance-session-select')?.value;
+      if (!activeSessionId) {
+        alert('Please select a session from the dropdown above before marking attendance.');
+        return;
+      }
+
       try {
         const res = await fetch('/api/attendance', {
           method: 'POST',
@@ -728,17 +822,19 @@
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
           },
-          body: JSON.stringify({ session_id: sessionId, club_member_id: memberId, status })
+          body: JSON.stringify({ session_id: activeSessionId, club_member_id: memberId, status })
         });
         if (res.ok) {
-          const el = document.getElementById(`att-status-${memberId}`);
-          if (el) {
-            el.textContent = status;
-            el.style.color = status === 'PRESENT' ? '#2dd4bf' : '#f43f5e';
+          if (currentAttendanceData && currentAttendanceData.attMap) {
+            currentAttendanceData.attMap[memberId] = status;
           }
+          renderAttendanceTable();
+        } else {
+          const errData = await res.json();
+          alert(errData.message || 'Failed to update attendance');
         }
       } catch (err) {
-        console.error(err);
+        console.error('Error marking attendance:', err);
       }
     };
 
@@ -832,8 +928,12 @@
       }
     };
 
-    // Load initial stats
-    loadOverviewStats();
+    // Verify admin authentication and load initial stats
+    verifyAdminAuth().then(isAuth => {
+      if (isAuth) {
+        loadOverviewStats();
+      }
+    });
   </script>
 </body>
 </html>

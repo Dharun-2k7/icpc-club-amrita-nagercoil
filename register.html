@@ -134,9 +134,12 @@
           
           statusEl.style.display = 'block';
           if (res.ok) {
-            statusEl.style.color = '#0D9488'; // Teal success
-            statusEl.textContent = 'Registration successful! Welcome to the club.';
+            statusEl.style.color = '#2dd4bf'; // Teal success
+            statusEl.textContent = data.message || 'Registration successful! Welcome to ICPC Club.';
             e.target.reset();
+            setTimeout(() => {
+              window.location.href = 'login.html';
+            }, 1500);
           } else {
             statusEl.style.color = '#E11D48'; // Red error
             statusEl.textContent = data.message || 'An error occurred. Please try again.';

@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
   try {
     const result = await pool.query(
-      `SELECT u.id, u.club_member_id, u.email, u.student_id, u.name, u.password_hash, u.role, u.is_active
+      `SELECT u.id, u.club_member_id, u.admin_id, u.email, u.student_id, u.name, u.password_hash, u.role, u.is_active
        FROM users u
        WHERE (LOWER(u.email) = $1 OR LOWER(u.student_id) = $1) AND u.is_active = TRUE`,
       [identifier]
@@ -47,6 +47,7 @@ export default async function handler(req, res) {
     const payload = {
       id: user.id,
       club_member_id: user.club_member_id,
+      admin_id: user.admin_id,
       email: user.email,
       student_id: user.student_id,
       name: user.name,

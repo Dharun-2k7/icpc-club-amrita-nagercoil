@@ -1359,20 +1359,142 @@ h2 {
   line-height: 1.55;
 }
 
-/* Footer Section (Algo Queen Style) */
+/* Footer Section (Gravitas Style moving bubble canvas & floating circular orbit badges) */
 .footer {
-  padding: 2.5rem 0 1.5rem;
-  background: #8b1538;
+  padding: 3.5rem 0 2rem;
+  background: radial-gradient(circle at 50% 0%, #171933 0%, #0B0C1B 100%);
   color: #ffffff;
   position: relative;
   font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  border-top: 1px solid rgba(147, 51, 234, 0.25);
+}
+
+.footer-bubble-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.footer .container {
+  position: relative;
+  z-index: 2;
+}
+
+/* Floating Social Orbit Badges Container */
+.footer-badges-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3.5rem;
+  margin: 1.5rem 0 3.5rem 0;
+  flex-wrap: wrap;
+}
+
+/* Individual Floating Circular Orbit Badge */
+.social-orbit-badge {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #9333ea 0%, #581c87 100%);
+  box-shadow: 0 12px 30px rgba(147, 51, 234, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #ffffff;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, filter 0.4s ease;
+  animation: floatBadge 4.5s ease-in-out infinite alternate;
+}
+
+.social-orbit-badge.badge-instagram {
+  animation-delay: 0s;
+  background: radial-gradient(circle at 35% 35%, #8b1538 0%, #4a0b1f 100%);
+  box-shadow: 0 12px 30px rgba(139, 21, 56, 0.5);
+}
+
+.social-orbit-badge.badge-youtube {
+  animation-delay: 1.1s;
+  background: radial-gradient(circle at 35% 35%, #7c3aed 0%, #4c1d95 100%);
+  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.5);
+}
+
+.social-orbit-badge.badge-linkedin {
+  animation-delay: 2.2s;
+  background: radial-gradient(circle at 35% 35%, #2563eb 0%, #1e3a8a 100%);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.5);
+}
+
+.social-orbit-badge.badge-x {
+  animation-delay: 3.3s;
+  background: radial-gradient(circle at 35% 35%, #ec4899 0%, #831843 100%);
+  box-shadow: 0 12px 30px rgba(236, 72, 153, 0.5);
+}
+
+@keyframes floatBadge {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(3deg); }
+  100% { transform: translateY(6px) rotate(-2deg); }
+}
+
+.social-orbit-badge:hover {
+  transform: scale(1.15) translateY(-8px) !important;
+  box-shadow: 0 22px 45px rgba(168, 85, 247, 0.7), 0 0 30px rgba(255, 255, 255, 0.5);
+  filter: brightness(1.15);
+}
+
+/* Badge Outer Spinning Circular SVG Text */
+.badge-text-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  animation: spinCircularText 16s linear infinite;
+  pointer-events: none;
+}
+
+.social-orbit-badge:hover .badge-text-svg {
+  animation-duration: 6s;
+}
+
+@keyframes spinCircularText {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Badge Inner Glass Icon Circle */
+.badge-icon {
+  position: relative;
+  z-index: 3;
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+}
+
+.social-orbit-badge:hover .badge-icon {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.32);
+  border-color: #ffffff;
 }
 
 .footer-top {
   display: flex;
   justify-content: space-between;
   gap: 4rem;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .footer-brand {
@@ -1401,7 +1523,7 @@ h2 {
 }
 
 .footer-desc {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 0.95rem;
   line-height: 1.6;
 }
@@ -1440,7 +1562,7 @@ h2 {
 .footer-divider {
   width: 100%;
   height: 1px;
-  background: rgba(255, 255, 255, 0.15);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
   margin-bottom: 1.5rem;
 }
 
@@ -1472,7 +1594,36 @@ h2 {
   opacity: 0.7;
 }
 
-/* Media Queries & Responsiveness */
+@media (max-width: 768px) {
+  .footer-badges-container {
+    gap: 1.5rem;
+    margin: 1rem 0 2.5rem 0;
+  }
+  .social-orbit-badge {
+    width: 95px;
+    height: 95px;
+  }
+  .badge-icon {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* Media Queries & Device Responsiveness (Laptops, Tablets, Phones, Mobile) */
+@media (max-width: 1200px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .team-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+  .gallery-groups {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 1024px) {
   .split-layout {
     grid-template-columns: 1fr;
@@ -1488,6 +1639,11 @@ h2 {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
+
+  .dashboard-container, .admin-container {
+    padding: 1rem;
+    margin-top: 20px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1500,18 +1656,19 @@ h2 {
     top: 100%;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.98);
+    background: rgba(15, 23, 42, 0.98);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     flex-direction: column;
-    padding: 2.5rem 0;
-    gap: 1.75rem;
+    padding: 2rem 1.5rem;
+    gap: 1.25rem;
     transform: translateY(-20px);
     opacity: 0;
     visibility: hidden;
     transition: var(--transition-smooth);
     z-index: 999;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   }
 
   .nav-links.active {
@@ -1520,8 +1677,26 @@ h2 {
     visibility: visible;
   }
 
+  .nav-links a {
+    color: #ffffff !important;
+    font-size: 1.1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    width: 100%;
+  }
+
   .nav-actions {
-    display: none;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .nav-actions .btn {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.85rem;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(2rem, 8vw, 3.2rem);
   }
 
   .stats-grid {
@@ -1574,6 +1749,44 @@ h2 {
     height: 38px;
     font-size: 1.25rem;
   }
+
+  .grid-3, .grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Responsive table wrapper */
+  .data-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 580px) {
+  .footer-badges-container {
+    gap: 1.25rem;
+    margin: 1rem 0 2rem 0;
+  }
+  
+  .social-orbit-badge {
+    width: 82px;
+    height: 82px;
+  }
+
+  .badge-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .badge-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .badge-text-svg text {
+    font-size: 10px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1593,6 +1806,18 @@ h2 {
   
   .hero-actions .btn {
     width: 100%;
+  }
+
+  .join-card {
+    padding: 1.5rem 1rem !important;
+  }
+
+  .form-group input, .form-group select, .form-group textarea {
+    font-size: 16px !important; /* Prevents auto-zoom on mobile safari */
+  }
+
+  .brand span {
+    display: none;
   }
 }
 

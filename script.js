@@ -410,3 +410,177 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+/* Moving Particle Canvas & Floating Orbit Badges for Footer (Gravitas Style) */
+function initMovingFooter() {
+  const footer = document.querySelector('.footer');
+  if (!footer) return;
+
+  // 1. Prepend Canvas for moving background bubble particles
+  let canvas = footer.querySelector('.footer-bubble-canvas');
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    canvas.className = 'footer-bubble-canvas';
+    footer.prepend(canvas);
+  }
+
+  // 2. Prepend Floating Circular Social Orbit Badges
+  if (!footer.querySelector('.footer-badges-container')) {
+    const badgesWrapper = document.createElement('div');
+    badgesWrapper.className = 'container footer-badges-container';
+    badgesWrapper.innerHTML = `
+      <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" class="social-orbit-badge badge-instagram" aria-label="Instagram">
+        <svg class="badge-text-svg" viewBox="0 0 100 100">
+          <path id="circle-ig" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
+          <text font-size="8.5" font-weight="700" letter-spacing="2" fill="#ffffff">
+            <textPath href="#circle-ig" startOffset="0%">• INSTAGRAM • INSTAGRAM •</textPath>
+          </text>
+        </svg>
+        <div class="badge-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+        </div>
+      </a>
+
+      <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" class="social-orbit-badge badge-youtube" aria-label="YouTube">
+        <svg class="badge-text-svg" viewBox="0 0 100 100">
+          <path id="circle-yt" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
+          <text font-size="8.5" font-weight="700" letter-spacing="2" fill="#ffffff">
+            <textPath href="#circle-yt" startOffset="0%">• YOUTUBE • YOUTUBE •</textPath>
+          </text>
+        </svg>
+        <div class="badge-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </div>
+      </a>
+
+      <a href="https://www.linkedin.com/company/icpc-club-amrita-nagercoil/posts/?feedView=all" target="_blank" rel="noopener noreferrer" class="social-orbit-badge badge-linkedin" aria-label="LinkedIn">
+        <svg class="badge-text-svg" viewBox="0 0 100 100">
+          <path id="circle-li" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
+          <text font-size="8.5" font-weight="700" letter-spacing="2" fill="#ffffff">
+            <textPath href="#circle-li" startOffset="0%">• LINKEDIN • LINKEDIN •</textPath>
+          </text>
+        </svg>
+        <div class="badge-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+          </svg>
+        </div>
+      </a>
+
+      <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="social-orbit-badge badge-x" aria-label="X (Twitter)">
+        <svg class="badge-text-svg" viewBox="0 0 100 100">
+          <path id="circle-x" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
+          <text font-size="8.5" font-weight="700" letter-spacing="2" fill="#ffffff">
+            <textPath href="#circle-x" startOffset="0%">• TWITTER • TWITTER •</textPath>
+          </text>
+        </svg>
+        <div class="badge-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+        </div>
+      </a>
+    `;
+
+    const divider = footer.querySelector('.footer-divider');
+    if (divider) {
+      footer.insertBefore(badgesWrapper, divider);
+    } else {
+      footer.appendChild(badgesWrapper);
+    }
+  }
+
+  // 3. Setup canvas particles animation
+  const ctx = canvas.getContext('2d');
+  let width = 0;
+  let height = 0;
+  let particles = [];
+
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    width = footer.clientWidth;
+    height = footer.clientHeight;
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function createParticles() {
+    particles = [];
+    const count = Math.max(25, Math.floor(width / 16));
+    const colors = [
+      'rgba(147, 51, 234, ',   // Purple
+      'rgba(99, 102, 241, ',   // Indigo
+      'rgba(236, 72, 153, ',   // Pink/Magenta
+      'rgba(56, 189, 248, ',   // Cyan/Blue
+      'rgba(255, 255, 255, '   // Translucent white
+    ];
+
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 20 + 4,
+        speedY: Math.random() * 0.7 + 0.25,
+        swingAmp: Math.random() * 1.8 + 0.4,
+        swingSpeed: Math.random() * 0.02 + 0.008,
+        swingPhase: Math.random() * Math.PI * 2,
+        baseOpacity: Math.random() * 0.25 + 0.06,
+        color: colors[Math.floor(Math.random() * colors.length)]
+      });
+    }
+  }
+
+  let rafId = null;
+  function draw() {
+    ctx.clearRect(0, 0, width, height);
+
+    particles.forEach(p => {
+      p.y -= p.speedY;
+      p.swingPhase += p.swingSpeed;
+      const currentX = p.x + Math.sin(p.swingPhase) * p.swingAmp;
+
+      if (p.y + p.radius < 0) {
+        p.y = height + p.radius;
+        p.x = Math.random() * width;
+      }
+
+      ctx.beginPath();
+      ctx.arc(currentX, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + p.baseOpacity + ')';
+      ctx.fill();
+    });
+
+    rafId = requestAnimationFrame(draw);
+  }
+
+  function start() {
+    cancelAnimationFrame(rafId);
+    resize();
+    createParticles();
+    draw();
+  }
+
+  window.addEventListener('resize', () => {
+    clearTimeout(window._footerBubbleTimer);
+    window._footerBubbleTimer = setTimeout(() => {
+      resize();
+      createParticles();
+    }, 120);
+  });
+
+  start();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initMovingFooter);
+} else {
+  initMovingFooter();
+}
+

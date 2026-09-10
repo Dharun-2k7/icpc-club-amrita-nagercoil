@@ -8,7 +8,7 @@ const pool = new Pool({
 
 const JWT_SECRET = process.env.JWT_SECRET || 'icpc-club-secret-key';
 
-function verifyAdmin(req, res) {
+async function verifyAdmin(req, res) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.status(401).json({ message: 'Unauthorized: Token required' });
@@ -17,11 +17,20 @@ function verifyAdmin(req, res) {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    if (decoded.role !== 'ADMIN') {
+    const userRes = await pool.query(
+      'SELECT id, role, is_active FROM users WHERE id = $1',
+      [decoded.id]
+    );
+    if (userRes.rows.length === 0 || !userRes.rows[0].is_active) {
+      res.status(401).json({ message: 'Unauthorized: Account invalid or deactivated' });
+      return null;
+    }
+    const role = (userRes.rows[0].role || '').toUpperCase();
+    if (role !== 'ADMIN') {
       res.status(403).json({ message: 'Forbidden: Admins only' });
       return null;
     }
-    return decoded;
+    return { ...decoded, role };
   } catch (err) {
     res.status(401).json({ message: 'Invalid or expired token' });
     return null;
@@ -29,7 +38,7 @@ function verifyAdmin(req, res) {
 }
 
 export default async function handler(req, res) {
-  const admin = verifyAdmin(req, res);
+  const admin = await verifyAdmin(req, res);
   if (!admin) return;
 
   const { action, id } = req.query;

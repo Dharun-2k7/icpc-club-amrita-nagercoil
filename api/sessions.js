@@ -8,12 +8,18 @@ const pool = new Pool({
 
 const JWT_SECRET = process.env.JWT_SECRET || 'icpc-club-secret-key';
 
-function verifyAdmin(req) {
+async function verifyAdmin(req) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
   try {
     const decoded = jwt.verify(authHeader.split(' ')[1], JWT_SECRET);
-    return decoded.role === 'ADMIN' ? decoded : null;
+    const userRes = await pool.query(
+      'SELECT id, role, is_active FROM users WHERE id = $1',
+      [decoded.id]
+    );
+    if (userRes.rows.length === 0 || !userRes.rows[0].is_active) return null;
+    const role = (userRes.rows[0].role || '').toUpperCase();
+    return role === 'ADMIN' ? { ...decoded, role } : null;
   } catch (err) {
     return null;
   }
@@ -50,7 +56,7 @@ export default async function handler(req, res) {
   }
 
   // Admin Verification for modifying requests
-  const admin = verifyAdmin(req);
+  const admin = await verifyAdmin(req);
   if (!admin) {
     return res.status(403).json({ message: 'Forbidden: Admins only' });
   }
