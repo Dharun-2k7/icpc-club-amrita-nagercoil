@@ -50,6 +50,36 @@ export default async function handler(req, res) {
       );
     `);
 
+    // Create password_resets table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        otp_code VARCHAR(6) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        used BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Create editorials table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS editorials (
+        id SERIAL PRIMARY KEY,
+        contest_name VARCHAR(255) NOT NULL,
+        problem_title VARCHAR(255) NOT NULL,
+        problem_url VARCHAR(512),
+        difficulty VARCHAR(50) DEFAULT 'MEDIUM',
+        video_url VARCHAR(512),
+        code_solution TEXT NOT NULL,
+        explanation TEXT,
+        language VARCHAR(50) DEFAULT 'cpp',
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     return res.status(200).json({ message: 'Database initialized successfully.' });
   } catch (error) {
     console.error('Error initializing database:', error);

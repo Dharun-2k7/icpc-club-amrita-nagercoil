@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contest Editorials - ICPC Club Amrita Nagercoil</title>
+    <meta name="description" content="Official code solutions, video walkthroughs, and problem editorials for ICPC Club internal contests." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="icon" type="image/webp" href="images/icpc.webp" />
+    <link rel="apple-touch-icon" href="images/icpc.webp" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .editorial-card {
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+      }
+      .editorial-card:hover {
+        border-color: #0D9488;
+        transform: translateY(-2px);
+      }
+      .code-container {
+        position: relative;
+        background: rgba(10, 15, 29, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 16px;
+        margin-top: 14px;
+        overflow-x: auto;
+      }
+      .code-container pre {
+        margin: 0;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9rem;
+        color: #38bdf8;
+        white-space: pre-wrap;
+      }
+      .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        cursor: pointer;
+      }
+      .copy-btn:hover {
+        background: #0D9488;
+        border-color: #0D9488;
+      }
+      .badge-difficulty {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+      .badge-easy { background: rgba(45, 212, 191, 0.2); color: #2dd4bf; }
+      .badge-medium { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+      .badge-hard { background: rgba(244, 63, 94, 0.2); color: #f43f5e; }
+    </style>
+  </head>
+  <body>
+    <!-- Background Blur Orbs -->
+    <div class="glow-orb orb-red" aria-hidden="true"></div>
+    <div class="glow-orb orb-blue" aria-hidden="true"></div>
+    <div class="glow-orb orb-yellow" aria-hidden="true"></div>
+
+    <header class="hero join-hero">
+      <nav class="navbar">
+        <div class="brand-wrapper">
+          <a class="edge-logo" href="https://icpc.foundation" target="_blank" rel="noopener noreferrer">
+            <img src="images/icpc.webp" alt="ICPC Foundation linked club logo" class="edge-logo-img" />
+          </a>
+          <a class="brand" href="index.html">ICPC Club <span>Amrita Nagercoil</span></a>
+        </div>
+
+        <div class="nav-links">
+          <a href="about.html">About</a>
+          <a href="roadmap.html">Roadmap</a>
+          <a href="editorials.html" class="active">Editorials</a>
+          <a href="why-join.html">Why Join</a>
+          <a href="events.html">Events</a>
+          <a href="team.html">Team</a>
+          <a href="gallery.html">Gallery</a>
+          <a href="announcements.html">Announcements</a>
+          <a href="contact.html">Contact</a>
+        </div>
+
+        <div class="nav-actions">
+          <a href="login.html" class="btn btn-outline" id="nav-login-btn">Log In</a>
+          <a href="register.html" class="btn btn-join" id="nav-register-btn">Register</a>
+          <a href="dashboard.html" class="btn btn-join" id="nav-dashboard-btn" style="display: none;">Dashboard</a>
+          <button class="btn btn-outline" id="nav-logout-btn" style="display: none;">Log Out</button>
+        </div>
+
+        <button class="menu-toggle" aria-label="Toggle navigation">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </nav>
+      
+      <div class="hero-content">
+        <div class="hero-text">
+          <p class="eyebrow"><span class="eyebrow-dot"></span>Solutions & Tutorials</p>
+          <img src="images/icpc.webp" alt="ICPC Official Logo" class="hero-logo" />
+          <h1>Contest <span class="text-grad-solve">Editorials</span> Repository</h1>
+          <p class="hero-tagline">
+            Deep dive into detailed code solutions, video walkthroughs, and problem breakdowns prepared by club coordinators and problem setters.
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container">
+          
+          <!-- Search & Filter Controls -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 32px; background: rgba(15,23,42,0.6); padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="flex: 1; min-width: 260px;">
+              <input type="text" id="editorial-search" placeholder="🔍 Search contest name or problem title..." oninput="renderEditorials()" style="width: 100%; padding: 10px 16px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff;" />
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-outline ed-filter-btn active" onclick="setDiffFilter('ALL', this)" style="padding: 6px 14px; font-size: 0.85rem;">All</button>
+              <button class="btn btn-outline ed-filter-btn" onclick="setDiffFilter('EASY', this)" style="padding: 6px 14px; font-size: 0.85rem; color: #2dd4bf; border-color: rgba(45,212,191,0.4);">Easy</button>
+              <button class="btn btn-outline ed-filter-btn" onclick="setDiffFilter('MEDIUM', this)" style="padding: 6px 14px; font-size: 0.85rem; color: #fbbf24; border-color: rgba(251,191,36,0.4);">Medium</button>
+              <button class="btn btn-outline ed-filter-btn" onclick="setDiffFilter('HARD', this)" style="padding: 6px 14px; font-size: 0.85rem; color: #f43f5e; border-color: rgba(244,63,94,0.4);">Hard</button>
+            </div>
+          </div>
+
+          <div id="editorials-list">
+            <div style="text-align: center; color: #94a3b8; padding: 40px;">Loading contest editorials...</div>
+          </div>
+
+        </div>
+      </section>
+    </main>
+
+    <footer id="contact" class="footer">
+      <div class="container footer-top">
+        <div class="footer-brand">
+          <div class="footer-logo-wrapper">
+            <img src="images/icpc.webp" alt="ICPC Logo" class="footer-logo" />
+            <span class="footer-logo-text">ICPC @Nagercoil</span>
+          </div>
+          <p class="footer-desc">
+            An initiative by Amrita Vishwa Vidyapeetham, endorsed by the ICPC Foundation empowering young programmers in competitive programming.
+          </p>
+        </div>
+        <div class="footer-links-grid">
+          <div class="footer-col">
+            <h4>Explore</h4>
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="events.html">Events</a>
+            <a href="gallery.html">Gallery</a>
+          </div>
+          <div class="footer-col">
+            <h4>Resources</h4>
+            <a href="roadmap.html">Roadmap</a>
+            <a href="editorials.html">Editorials</a>
+            <a href="why-join.html">Why Join</a>
+            <a href="announcements.html">Announcements</a>
+          </div>
+          <div class="footer-col">
+            <h4>Connect</h4>
+            <a href="join-us.html">Join Us</a>
+            <a href="team.html">Team</a>
+            <a href="contact.html">Contact Us</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-divider"></div>
+      <div class="container footer-bottom">
+        <div class="footer-copy">© 2026 ICPC @Nagercoil. All rights reserved.</div>
+        <div class="footer-email">
+          Email: <a href="mailto:icpcamritangl@gmail.com" style="color: inherit; text-decoration: none;">icpcamritangl@gmail.com</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      let allEditorials = [];
+      let activeDifficulty = 'ALL';
+
+      async function fetchEditorials() {
+        try {
+          const res = await fetch('/api/editorials');
+          if (res.ok) {
+            allEditorials = await res.json();
+            renderEditorials();
+          } else {
+            document.getElementById('editorials-list').innerHTML = '<div style="text-align:center; color:#f43f5e; padding:30px;">Error loading editorials.</div>';
+          }
+        } catch (err) {
+          console.error(err);
+          document.getElementById('editorials-list').innerHTML = '<div style="text-align:center; color:#f43f5e; padding:30px;">Failed to connect to server.</div>';
+        }
+      }
+
+      function setDiffFilter(diff, btn) {
+        activeDifficulty = diff;
+        document.querySelectorAll('.ed-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderEditorials();
+      }
+
+      function renderEditorials() {
+        const query = (document.getElementById('editorial-search')?.value || '').toLowerCase().trim();
+        const container = document.getElementById('editorials-list');
+
+        const filtered = allEditorials.filter(ed => {
+          const matchDiff = activeDifficulty === 'ALL' || ed.difficulty === activeDifficulty;
+          const matchQuery = !query || 
+                             (ed.contest_name && ed.contest_name.toLowerCase().includes(query)) ||
+                             (ed.problem_title && ed.problem_title.toLowerCase().includes(query)) ||
+                             (ed.explanation && ed.explanation.toLowerCase().includes(query));
+          return matchDiff && matchQuery;
+        });
+
+        if (filtered.length === 0) {
+          container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:40px;">No editorials found matching your search.</div>';
+          return;
+        }
+
+        container.innerHTML = filtered.map(ed => {
+          const diffClass = `badge-${ed.difficulty.toLowerCase()}`;
+          const dateStr = new Date(ed.created_at).toLocaleDateString();
+          
+          return `
+            <div class="editorial-card">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+                <div>
+                  <span style="color:#0D9488; font-weight:700; font-size:0.85rem; text-transform:uppercase; tracking:1px;">${ed.contest_name}</span>
+                  <h2 style="margin:4px 0 8px 0; font-size:1.4rem;">
+                    ${ed.problem_title}
+                    ${ed.problem_url ? `<a href="${ed.problem_url}" target="_blank" rel="noopener" style="font-size:0.85rem; color:#38bdf8; margin-left:8px; text-decoration:none;">🔗 Open Problem</a>` : ''}
+                  </h2>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="badge-difficulty ${diffClass}">${ed.difficulty}</span>
+                  <span style="font-size:0.8rem; color:#94a3b8;">${dateStr}</span>
+                </div>
+              </div>
+
+              ${ed.explanation ? `<p style="color:#cbd5e1; margin-top:12px; font-size:0.95rem; line-height:1.6;">${ed.explanation}</p>` : ''}
+
+              ${ed.video_url ? `
+                <div style="margin-top:12px;">
+                  <a href="${ed.video_url}" target="_blank" rel="noopener" class="btn btn-outline" style="padding:6px 14px; font-size:0.85rem; border-color:#f43f5e; color:#f43f5e;">
+                    ▶ Watch Video Editorial Walkthrough
+                  </a>
+                </div>
+              ` : ''}
+
+              <div class="code-container">
+                <button onclick="copyCode(this)" class="copy-btn">Copy Code</button>
+                <pre><code>${escapeHtml(ed.code_solution)}</code></pre>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function escapeHtml(str) {
+        return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+
+      function copyCode(btn) {
+        const codeText = btn.parentElement.querySelector('code').innerText;
+        navigator.clipboard.writeText(codeText).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy Code', 2000);
+        });
+      }
+
+      fetchEditorials();
+    </script>
+    <script src="script.js" defer></script>
+  </body>
+</html>

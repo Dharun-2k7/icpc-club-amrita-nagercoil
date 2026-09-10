@@ -170,6 +170,7 @@
       <button class="tab-btn" onclick="switchTab('sessions-tab', this)">Manage Sessions</button>
       <button class="tab-btn" onclick="switchTab('attendance-tab', this)">Track Attendance</button>
       <button class="tab-btn" onclick="switchTab('announcements-tab', this)">Announcements</button>
+      <button class="tab-btn" onclick="switchTab('editorials-tab', this)">Manage Editorials</button>
     </div>
 
     <!-- 1. OVERVIEW TAB -->
@@ -393,6 +394,71 @@
         <tbody id="announcements-tbody"></tbody>
       </table>
     </div>
+
+    <!-- 6. EDITORIALS TAB -->
+    <div id="editorials-tab" class="tab-content">
+      <h3>Publish Contest Editorial</h3>
+      <form id="create-editorial-form" style="margin-top: 12px;">
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Contest Name *</label>
+            <input type="text" id="ed-contest" required placeholder="e.g. ICPC Nagercoil Qualifier #1" />
+          </div>
+          <div class="form-group">
+            <label>Problem Title *</label>
+            <input type="text" id="ed-problem" required placeholder="e.g. Problem B: Optimal Subarray Sum" />
+          </div>
+          <div class="form-group">
+            <label>Problem URL (Optional)</label>
+            <input type="url" id="ed-url" placeholder="https://codeforces.com/problemset/problem/..." />
+          </div>
+          <div class="form-group">
+            <label>Difficulty</label>
+            <select id="ed-difficulty">
+              <option value="EASY">Easy</option>
+              <option value="MEDIUM" selected>Medium</option>
+              <option value="HARD">Hard</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Programming Language</label>
+            <select id="ed-lang">
+              <option value="cpp" selected>C++ 20</option>
+              <option value="python">Python 3</option>
+              <option value="java">Java 17</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Video Walkthrough Link (Optional)</label>
+            <input type="url" id="ed-video" placeholder="https://youtube.com/watch?v=..." />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Explanation / Logic Summary</label>
+          <textarea id="ed-explanation" rows="3" placeholder="Briefly describe the approach, key insights, and complexity..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Code Solution *</label>
+          <textarea id="ed-code" rows="8" required placeholder="#include <bits/stdc++.h>&#10;using namespace std;&#10;&#10;int main() { ... }" style="font-family: monospace;"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Publish Editorial</button>
+      </form>
+      <div id="ed-msg" style="margin-top: 10px; font-weight: 600;"></div>
+
+      <h3 style="margin-top: 32px;">Published Contest Editorials</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Contest</th>
+            <th>Problem Title</th>
+            <th>Difficulty</th>
+            <th>Language</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="editorials-tbody"></tbody>
+      </table>
+    </div>
   </main>
 
   <script>
@@ -455,6 +521,7 @@
       if (tabId === 'sessions-tab') loadSessionsList();
       if (tabId === 'attendance-tab') loadSessionsSelectForAttendance();
       if (tabId === 'announcements-tab') loadAnnouncementsAndSessionOptions();
+      if (tabId === 'editorials-tab') loadEditorialsList();
     }
 
     // --- OVERVIEW STATS ---
@@ -923,6 +990,84 @@
           headers: { 'Authorization': 'Bearer ' + token }
         });
         if (res.ok) loadAnnouncementsAndSessionOptions();
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    // --- CONTEST EDITORIALS ---
+    async function loadEditorialsList() {
+      try {
+        const res = await fetch('/api/editorials');
+        const list = await res.json();
+        const tbody = document.getElementById('editorials-tbody');
+        tbody.innerHTML = '';
+        if (Array.isArray(list)) {
+          list.forEach(e => {
+            tbody.innerHTML += `
+              <tr>
+                <td><strong>${e.contest_name}</strong></td>
+                <td>${e.problem_title}</td>
+                <td><span class="badge badge-${e.difficulty.toLowerCase()}">${e.difficulty}</span></td>
+                <td>${e.language.toUpperCase()}</td>
+                <td>
+                  <button onclick="deleteEditorial(${e.id})" class="btn btn-outline" style="padding:4px 8px; font-size:11px; border-color:#f43f5e; color:#f43f5e;">Delete</button>
+                </td>
+              </tr>
+            `;
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    document.getElementById('create-editorial-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msgEl = document.getElementById('ed-msg');
+      const payload = {
+        contest_name: document.getElementById('ed-contest').value,
+        problem_title: document.getElementById('ed-problem').value,
+        problem_url: document.getElementById('ed-url').value,
+        difficulty: document.getElementById('ed-difficulty').value,
+        language: document.getElementById('ed-lang').value,
+        video_url: document.getElementById('ed-video').value,
+        explanation: document.getElementById('ed-explanation').value,
+        code_solution: document.getElementById('ed-code').value
+      };
+
+      try {
+        const res = await fetch('/api/editorials', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msgEl.style.color = '#2dd4bf';
+          msgEl.textContent = 'Editorial published successfully!';
+          e.target.reset();
+          loadEditorialsList();
+        } else {
+          msgEl.style.color = '#f43f5e';
+          msgEl.textContent = data.message || 'Error publishing editorial';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    window.deleteEditorial = async function(id) {
+      if (!confirm('Delete this editorial?')) return;
+      try {
+        const res = await fetch(`/api/editorials?id=${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) loadEditorialsList();
       } catch (err) {
         console.error(err);
       }

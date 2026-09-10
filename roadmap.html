@@ -70,81 +70,166 @@
       <section class="section">
         <div class="container">
           
+          <!-- Progress Tracker Header -->
+          <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; padding: 20px 28px; margin-bottom: 36px; backdrop-filter: blur(12px);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 style="margin: 0; font-size: 1.2rem; color: #fff;">Your Algorithmic Mastery Progress</h3>
+                <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.85rem;">Check off topics as you learn and solve recommended problems.</p>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span id="progress-percent" style="font-size: 1.5rem; font-weight: 800; color: #2dd4bf;">0%</span>
+                <div style="width: 140px; height: 10px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden;">
+                  <div id="progress-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #0D9488, #2dd4bf); transition: width 0.3s ease;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <div class="timeline">
             
-            <!-- Week 1-2 -->
+            <!-- Phase 1: Time Complexity & STL -->
             <div class="timeline-item scroll-animate">
               <div class="timeline-dot"></div>
               <div class="timeline-content card">
-                <span class="team-role">Phase 01 • Weeks 1-2</span>
-                <h3>Syntax, Time Complexity, Basic Math & Arrays</h3>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <span class="team-role">Phase 01 • Foundation</span>
+                  <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #2dd4bf; font-weight: 600;">
+                    <input type="checkbox" class="topic-check" data-topic="phase1" onchange="toggleTopic('phase1')" style="width: 18px; height: 18px; accent-color: #0D9488;" />
+                    Mark Completed
+                  </label>
+                </div>
+                <h3>Syntax, Time Complexity, Basic Math & STL</h3>
                 <p>
-                  Get comfortable with C++ STL or Java Collections. Learn how to estimate if your code will pass the 1-second time limit (Big O notation), master prime sieves, modular arithmetic, frequency arrays, prefix sums, and bit manipulation.
+                  Master Big O Notation ($10^8$ operations per second limit), C++ STL containers (`std::vector`, `std::map`, `std::set`), Modular Arithmetic, Frequency Arrays, Prefix Sums, and Sieve of Eratosthenes.
                 </p>
-                <div class="timeline-resources">
-                  <a href="https://usaco.guide/bronze/time-comp" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-top: 1rem;">View STL Guide</a>
-                  <a href="https://usaco.guide/bronze" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-top: 1rem; margin-left: 0.5rem;">USACO Guide</a>
+                <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                  <strong style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 8px;">🎯 Recommended Problem Set:</strong>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="https://cses.fi/problemset/task/1621" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">CSES • Distinct Numbers</a>
+                    <a href="https://codeforces.com/problemset/problem/4/A" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">Codeforces 800 • Watermelon</a>
+                    <a href="https://atcoder.jp/contests/abc200/tasks/abc200_c" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">AtCoder • Ringo's Favorite Numbers 2</a>
+                  </div>
+                </div>
+                <div class="timeline-resources" style="margin-top: 12px;">
+                  <a href="https://usaco.guide/bronze/time-comp" target="_blank" rel="noopener" class="btn btn-outline" style="padding: 4px 12px; font-size: 0.8rem;">USACO Guide: Time Complexity</a>
+                  <a href="announcements.html" class="btn btn-outline" style="padding: 4px 12px; font-size: 0.8rem; border-color: #0D9488; color: #2dd4bf;">📺 View Session Recordings</a>
                 </div>
               </div>
             </div>
 
-            <!-- Week 3-4 -->
+            <!-- Phase 2: Binary Search & Two Pointers -->
             <div class="timeline-item scroll-animate delay-100">
               <div class="timeline-dot"></div>
               <div class="timeline-content card">
-                <span class="team-role" style="color: var(--icpc-blue);">Phase 02 • Weeks 3-4</span>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <span class="team-role" style="color: var(--icpc-blue);">Phase 02 • Searching & Optimization</span>
+                  <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #2dd4bf; font-weight: 600;">
+                    <input type="checkbox" class="topic-check" data-topic="phase2" onchange="toggleTopic('phase2')" style="width: 18px; height: 18px; accent-color: #0D9488;" />
+                    Mark Completed
+                  </label>
+                </div>
                 <h3>Binary Search, Two Pointers & Greedy Algorithms</h3>
                 <p>
-                  Move beyond simple linear scans. Learn to find optimal solutions in logarithmic time using Binary Search on Answers, optimize array traversals with Two Pointers and Sliding Windows, and learn to make locally optimal choices with Greedy Algorithms.
+                  Move beyond linear scans. Learn Binary Search on Answers (`std::lower_bound`), optimize array traversals with Two Pointers / Sliding Windows, and build locally optimal choices using Greedy strategies.
                 </p>
-                <div class="timeline-resources">
-                  <a href="https://usaco.guide/silver/binary-search" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-top: 1rem;">Binary Search Practice</a>
-                  <a href="https://usaco.guide/silver/greedy-sorting" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-top: 1rem; margin-left: 0.5rem;">Greedy Resources</a>
+                <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                  <strong style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 8px;">🎯 Recommended Problem Set:</strong>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="https://cses.fi/problemset/task/1620" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">CSES • Factory Machines</a>
+                    <a href="https://codeforces.com/problemset/problem/279/B" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">Codeforces 1400 • Books</a>
+                    <a href="https://atcoder.jp/contests/abc148/tasks/abc148_e" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">AtCoder • Double Factorial</a>
+                  </div>
+                </div>
+                <div class="timeline-resources" style="margin-top: 12px;">
+                  <a href="https://usaco.guide/silver/binary-search" target="_blank" rel="noopener" class="btn btn-outline" style="padding: 4px 12px; font-size: 0.8rem;">Binary Search Guide</a>
                 </div>
               </div>
             </div>
 
-            <!-- Week 5-6 -->
+            <!-- Phase 3: Graph Traversal & Trees -->
             <div class="timeline-item scroll-animate delay-200">
               <div class="timeline-dot"></div>
               <div class="timeline-content card">
-                <span class="team-role" style="color: var(--text-primary);">Phase 03 • Weeks 5-6</span>
-                <h3>Graphs, DFS & BFS</h3>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <span class="team-role" style="color: var(--text-primary);">Phase 03 • Network Structures</span>
+                  <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #2dd4bf; font-weight: 600;">
+                    <input type="checkbox" class="topic-check" data-topic="phase3" onchange="toggleTopic('phase3')" style="width: 18px; height: 18px; accent-color: #0D9488;" />
+                    Mark Completed
+                  </label>
+                </div>
+                <h3>Graphs, BFS, DFS & Dijkstra's Algorithm</h3>
                 <p>
-                  Understand how to represent networks using adjacency lists. Traverse grids, find shortest paths in unweighted graphs using BFS, and explore connected components with DFS.
+                  Represent networks with adjacency lists, traverse grid mazes, find connected components via DFS, compute shortest paths using BFS and Dijkstra's algorithm, and solve Tree Diameter problems.
                 </p>
-                <div class="timeline-resources">
-                  <a href="https://cp-algorithms.com/graph/breadth-first-search.html" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-top: 1rem;">Graph Algorithms</a>
+                <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                  <strong style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 8px;">🎯 Recommended Problem Set:</strong>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="https://cses.fi/problemset/task/1192" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">CSES • Counting Rooms</a>
+                    <a href="https://cses.fi/problemset/task/1671" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">CSES • Shortest Routes I</a>
+                    <a href="https://codeforces.com/problemset/problem/115/A" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">Codeforces 1000 • Party</a>
+                  </div>
+                </div>
+                <div class="timeline-resources" style="margin-top: 12px;">
+                  <a href="https://cp-algorithms.com/graph/breadth-first-search.html" target="_blank" rel="noopener" class="btn btn-outline" style="padding: 4px 12px; font-size: 0.8rem;">CP Algorithms Graph Guide</a>
                 </div>
               </div>
             </div>
 
-            <!-- Week 7-8 -->
+            <!-- Phase 4: Dynamic Programming -->
             <div class="timeline-item scroll-animate delay-300">
               <div class="timeline-dot"></div>
               <div class="timeline-content card">
-                <span class="team-role" style="color: #ff5e85;">Phase 04 • Weeks 7-8</span>
-                <h3>Dynamic Programming (1D & 2D)</h3>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <span class="team-role" style="color: #ff5e85;">Phase 04 • Optimization Engine</span>
+                  <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #2dd4bf; font-weight: 600;">
+                    <input type="checkbox" class="topic-check" data-topic="phase4" onchange="toggleTopic('phase4')" style="width: 18px; height: 18px; accent-color: #0D9488;" />
+                    Mark Completed
+                  </label>
+                </div>
+                <h3>Dynamic Programming (1D, 2D & Knapsack)</h3>
                 <p>
-                  The most feared but rewarding topic. Learn how to break down complex problems into overlapping subproblems, cache results (memoization), and solve them iteratively (tabulation).
+                  Break down complex problems into overlapping subproblems. Master state definitions, memoization vs tabulation, Coin Change, Longest Common Subsequence (LCS), and 0/1 Knapsack.
                 </p>
-                <div class="timeline-resources">
-                  <a href="https://usaco.guide/gold/dp-intro" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-top: 1rem;">DP Roadmap</a>
+                <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                  <strong style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 8px;">🎯 Recommended Problem Set:</strong>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="https://cses.fi/problemset/task/1633" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">CSES • Dice Combinations</a>
+                    <a href="https://atcoder.jp/contests/dp/tasks/dp_a" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">Educational DP • Frog 1</a>
+                    <a href="https://atcoder.jp/contests/dp/tasks/dp_d" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">Educational DP • Knapsack 1</a>
+                  </div>
+                </div>
+                <div class="timeline-resources" style="margin-top: 12px;">
+                  <a href="https://usaco.guide/gold/dp-intro" target="_blank" rel="noopener" class="btn btn-outline" style="padding: 4px 12px; font-size: 0.8rem;">USACO Gold DP Guide</a>
                 </div>
               </div>
             </div>
 
-            <!-- Week 9+ -->
+            <!-- Phase 5: Advanced Data Structures -->
             <div class="timeline-item scroll-animate delay-400">
               <div class="timeline-dot"></div>
               <div class="timeline-content card">
-                <span class="team-role" style="color: #00d2ff;">Phase 05 • Advanced Topics</span>
-                <h3>Trees, Segment Trees & DSU</h3>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <span class="team-role" style="color: #00d2ff;">Phase 05 • Advanced Structures</span>
+                  <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #2dd4bf; font-weight: 600;">
+                    <input type="checkbox" class="topic-check" data-topic="phase5" onchange="toggleTopic('phase5')" style="width: 18px; height: 18px; accent-color: #0D9488;" />
+                    Mark Completed
+                  </label>
+                </div>
+                <h3>Segment Trees, Fenwick & Disjoint Set Union (DSU)</h3>
                 <p>
-                  Master Disjoint Set Union (DSU) for cycle detection, calculate Lowest Common Ancestors (LCA) on trees, and utilize Segment Trees for blazing-fast range queries and updates.
+                  Master Disjoint Set Union (DSU) for dynamic connectedness, Fenwick Trees (Binary Indexed Trees) for point updates, and Segment Trees for $O(\log N)$ range queries and lazy propagation.
                 </p>
-                <div class="timeline-resources">
-                  <a href="https://cp-algorithms.com/data_structures/segment_tree.html" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-top: 1rem;">Advanced Data Structures</a>
+                <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                  <strong style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 8px;">🎯 Recommended Problem Set:</strong>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="https://cses.fi/problemset/task/1676" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">CSES • Road Construction (DSU)</a>
+                    <a href="https://cses.fi/problemset/task/1646" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">CSES • Static Range Sum Queries</a>
+                    <a href="https://codeforces.com/problemset/problem/339/D" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">Codeforces 1700 • Xenia and Bit Operations</a>
+                  </div>
+                </div>
+                <div class="timeline-resources" style="margin-top: 12px;">
+                  <a href="https://cp-algorithms.com/data_structures/segment_tree.html" target="_blank" rel="noopener" class="btn btn-outline" style="padding: 4px 12px; font-size: 0.8rem;">Segment Tree Complete Guide</a>
                 </div>
               </div>
             </div>
@@ -206,6 +291,45 @@
         </div>
       </div>
     </footer>
+    <script>
+      function getCompletedTopics() {
+        try {
+          return JSON.parse(localStorage.getItem('icpc_roadmap_topics') || '{}');
+        } catch(e) {
+          return {};
+        }
+      }
+
+      function updateProgressUI() {
+        const completed = getCompletedTopics();
+        const checkboxes = document.querySelectorAll('.topic-check');
+        let count = 0;
+        checkboxes.forEach(cb => {
+          const key = cb.getAttribute('data-topic');
+          if (completed[key]) {
+            cb.checked = true;
+            count++;
+          } else {
+            cb.checked = false;
+          }
+        });
+        const total = checkboxes.length || 5;
+        const pct = Math.round((count / total) * 100);
+        const percentEl = document.getElementById('progress-percent');
+        const fillEl = document.getElementById('progress-bar-fill');
+        if (percentEl) percentEl.textContent = `${pct}%`;
+        if (fillEl) fillEl.style.width = `${pct}%`;
+      }
+
+      function toggleTopic(topicKey) {
+        const completed = getCompletedTopics();
+        completed[topicKey] = !completed[topicKey];
+        localStorage.setItem('icpc_roadmap_topics', JSON.stringify(completed));
+        updateProgressUI();
+      }
+
+      document.addEventListener('DOMContentLoaded', updateProgressUI);
+    </script>
     <script src="script.js" defer></script>
   </body>
 </html>

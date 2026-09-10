@@ -152,7 +152,7 @@ export default async function handler(req, res) {
   }
 
   // Handle POST /api/auth?action=login
-  if (req.method === 'POST' && (action === 'login' || !action)) {
+  if (req.method === 'POST' && action === 'login') {
     const { email, roll_number, password } = req.body;
     const identifier = (email || roll_number || '').trim().toLowerCase();
 
@@ -200,6 +200,123 @@ export default async function handler(req, res) {
     } catch (error) {
       console.error('Login error:', error);
       return res.status(500).json({ message: 'Internal Server Error during login' });
+    }
+  }
+
+  // Handle POST /api/auth?action=forgot-password
+  if (req.method === 'POST' && action === 'forgot-password') {
+    const { identifier } = req.body;
+    const cleanId = (identifier || '').trim().toLowerCase();
+
+    if (!cleanId) {
+      return res.status(400).json({ message: 'Email or Roll Number is required' });
+    }
+
+    try {
+      const userRes = await pool.query(
+        `SELECT id, email, name FROM users WHERE (LOWER(email) = $1 OR LOWER(student_id) = $1) AND is_active = TRUE`,
+        [cleanId]
+      );
+
+      if (userRes.rows.length === 0) {
+        return res.status(404).json({ message: 'No registered user found with provided Email or Roll Number.' });
+      }
+
+      const user = userRes.rows[0];
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      await pool.query(
+        `INSERT INTO password_resets (user_id, otp_code, expires_at)
+         VALUES ($1, $2, CURRENT_TIMESTAMP + INTERVAL '15 minutes')`,
+        [user.id, otpCode]
+      );
+
+      console.log(`[PASSWORD RESET OTP] User ${user.email}: ${otpCode}`);
+
+      return res.status(200).json({
+        message: `OTP sent successfully to ${user.email}`,
+        email: user.email,
+        otp: otpCode // Returned for testing / immediate user feedback
+      });
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      return res.status(500).json({ message: 'Internal Server Error requesting password reset' });
+    }
+  }
+
+  // Handle POST /api/auth?action=verify-otp
+  if (req.method === 'POST' && action === 'verify-otp') {
+    const { identifier, otp_code } = req.body;
+    const cleanId = (identifier || '').trim().toLowerCase();
+    const cleanOtp = (otp_code || '').trim();
+
+    if (!cleanId || !cleanOtp) {
+      return res.status(400).json({ message: 'Identifier and OTP code are required' });
+    }
+
+    try {
+      const resetRes = await pool.query(
+        `SELECT pr.id, pr.expires_at
+         FROM password_resets pr
+         JOIN users u ON pr.user_id = u.id
+         WHERE (LOWER(u.email) = $1 OR LOWER(u.student_id) = $1)
+           AND pr.otp_code = $2
+           AND pr.used = FALSE
+           AND pr.expires_at > CURRENT_TIMESTAMP
+         ORDER BY pr.created_at DESC LIMIT 1`,
+        [cleanId, cleanOtp]
+      );
+
+      if (resetRes.rows.length === 0) {
+        return res.status(400).json({ message: 'Invalid or expired OTP code.' });
+      }
+
+      return res.status(200).json({ valid: true, message: 'OTP verified successfully.' });
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      return res.status(500).json({ message: 'Internal Server Error verifying OTP' });
+    }
+  }
+
+  // Handle POST /api/auth?action=reset-password
+  if (req.method === 'POST' && action === 'reset-password') {
+    const { identifier, otp_code, new_password } = req.body;
+    const cleanId = (identifier || '').trim().toLowerCase();
+    const cleanOtp = (otp_code || '').trim();
+
+    if (!cleanId || !cleanOtp || !new_password) {
+      return res.status(400).json({ message: 'Identifier, OTP code, and new password are required' });
+    }
+
+    try {
+      const resetRes = await pool.query(
+        `SELECT pr.id, u.id as user_id
+         FROM password_resets pr
+         JOIN users u ON pr.user_id = u.id
+         WHERE (LOWER(u.email) = $1 OR LOWER(u.student_id) = $1)
+           AND pr.otp_code = $2
+           AND pr.used = FALSE
+           AND pr.expires_at > CURRENT_TIMESTAMP
+         ORDER BY pr.created_at DESC LIMIT 1`,
+        [cleanId, cleanOtp]
+      );
+
+      if (resetRes.rows.length === 0) {
+        return res.status(400).json({ message: 'Invalid or expired OTP code.' });
+      }
+
+      const { id: resetId, user_id: userId } = resetRes.rows[0];
+
+      const salt = await bcrypt.genSalt(10);
+      const newHash = await bcrypt.hash(new_password, salt);
+
+      await pool.query(`UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`, [newHash, userId]);
+      await pool.query(`UPDATE password_resets SET used = TRUE WHERE id = $1`, [resetId]);
+
+      return res.status(200).json({ message: 'Password reset successful! You can now log in with your new password.' });
+    } catch (error) {
+      console.error('Reset password error:', error);
+      return res.status(500).json({ message: 'Internal Server Error resetting password' });
     }
   }
 

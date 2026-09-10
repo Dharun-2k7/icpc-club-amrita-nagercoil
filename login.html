@@ -72,6 +72,10 @@
               <div class="form-group">
                 <label for="password">Password</label>
                 <input id="password" name="password" type="password" placeholder="Your password" required />
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                  <span style="font-size: 0.85rem; color: #94a3b8;">Forgot your password?</span>
+                  <button type="button" onclick="openResetModal()" style="background: none; border: none; color: #38bdf8; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: underline;">Reset Password</button>
+                </div>
               </div>
 
               <!-- Status Message -->
@@ -83,6 +87,44 @@
         </div>
       </section>
     </main>
+
+    <!-- Forgot Password Modal -->
+    <div id="reset-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
+      <div style="background: #0f172a; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; width: 100%; max-width: 440px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); color: #fff;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="margin: 0; font-size: 1.25rem;">Account Password Reset</h3>
+          <button type="button" onclick="closeResetModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+
+        <!-- Step 1: Request OTP -->
+        <div id="reset-step-1">
+          <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 16px;">
+            Enter your registered Email Address or Roll Number. We will generate a verification OTP code for account recovery.
+          </p>
+          <div class="form-group">
+            <label style="font-size: 0.85rem; color: #94a3b8;">Email or Roll Number *</label>
+            <input type="text" id="reset-id" placeholder="e.g. student@amrita.edu or NC.SC.U4CSE25004" style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.3); color:#fff;" />
+          </div>
+          <button type="button" onclick="handleSendOTP()" id="send-otp-btn" class="btn btn-primary" style="width: 100%; margin-top: 12px;">Send Reset OTP</button>
+        </div>
+
+        <!-- Step 2: Verify OTP & New Password -->
+        <div id="reset-step-2" style="display: none;">
+          <p style="color: #2dd4bf; font-size: 0.85rem; margin-bottom: 16px;" id="reset-otp-msg"></p>
+          <div class="form-group">
+            <label style="font-size: 0.85rem; color: #94a3b8;">6-Digit OTP Code *</label>
+            <input type="text" id="reset-otp" placeholder="Enter 6-digit OTP" maxlength="6" style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.3); color:#fff; font-size:1.2rem; letter-spacing:4px; text-align:center;" />
+          </div>
+          <div class="form-group" style="margin-top: 12px;">
+            <label style="font-size: 0.85rem; color: #94a3b8;">New Password *</label>
+            <input type="password" id="reset-new-pass" placeholder="At least 6 characters" style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.3); color:#fff;" />
+          </div>
+          <button type="button" onclick="handleResetPassword()" id="confirm-reset-btn" class="btn btn-primary" style="width: 100%; margin-top: 16px;">Reset Password</button>
+        </div>
+
+        <div id="reset-modal-msg" style="margin-top: 14px; text-align: center; font-weight: 600; font-size: 0.9rem;"></div>
+      </div>
+    </div>
 
     <!-- Footer Section -->
     <footer id="contact" class="footer">
@@ -151,7 +193,7 @@
         const password = document.getElementById('password').value;
 
         try {
-          const res = await fetch('/api/login', {
+          const res = await fetch('/api/auth?action=login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ roll_number: identifier, email: identifier, password })
@@ -185,6 +227,109 @@
           btn.disabled = false;
         }
       });
+
+      // --- FORGOT PASSWORD MODAL HANDLERS ---
+      function openResetModal() {
+        document.getElementById('reset-modal').style.display = 'flex';
+        document.getElementById('reset-step-1').style.display = 'block';
+        document.getElementById('reset-step-2').style.display = 'none';
+        document.getElementById('reset-modal-msg').textContent = '';
+      }
+
+      function closeResetModal() {
+        document.getElementById('reset-modal').style.display = 'none';
+      }
+
+      async function handleSendOTP() {
+        const idVal = document.getElementById('reset-id').value.trim();
+        const msgEl = document.getElementById('reset-modal-msg');
+        const btn = document.getElementById('send-otp-btn');
+
+        if (!idVal) {
+          msgEl.style.color = '#f43f5e';
+          msgEl.textContent = 'Please enter your Email or Roll Number.';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Sending OTP...';
+        msgEl.textContent = '';
+
+        try {
+          const res = await fetch('/api/auth?action=forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier: idVal })
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            document.getElementById('reset-step-1').style.display = 'none';
+            document.getElementById('reset-step-2').style.display = 'block';
+            document.getElementById('reset-otp-msg').textContent = `OTP code generated for ${data.email}. (Demo OTP Code: ${data.otp})`;
+            if (data.otp) {
+              document.getElementById('reset-otp').value = data.otp;
+            }
+          } else {
+            msgEl.style.color = '#f43f5e';
+            msgEl.textContent = data.message || 'Error requesting password reset.';
+          }
+        } catch (err) {
+          console.error(err);
+          msgEl.style.color = '#f43f5e';
+          msgEl.textContent = 'Error connecting to server.';
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Send Reset OTP';
+        }
+      }
+
+      async function handleResetPassword() {
+        const idVal = document.getElementById('reset-id').value.trim();
+        const otpVal = document.getElementById('reset-otp').value.trim();
+        const passVal = document.getElementById('reset-new-pass').value;
+        const msgEl = document.getElementById('reset-modal-msg');
+        const btn = document.getElementById('confirm-reset-btn');
+
+        if (!otpVal || !passVal) {
+          msgEl.style.color = '#f43f5e';
+          msgEl.textContent = 'Please enter both the OTP code and new password.';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Resetting Password...';
+        msgEl.textContent = '';
+
+        try {
+          const res = await fetch('/api/auth?action=reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier: idVal, otp_code: otpVal, new_password: passVal })
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            msgEl.style.color = '#2dd4bf';
+            msgEl.textContent = 'Password reset successful! You can now log in.';
+            setTimeout(() => {
+              closeResetModal();
+              document.getElementById('roll_number').value = idVal;
+              document.getElementById('password').value = passVal;
+            }, 1500);
+          } else {
+            msgEl.style.color = '#f43f5e';
+            msgEl.textContent = data.message || 'Error resetting password.';
+          }
+        } catch (err) {
+          console.error(err);
+          msgEl.style.color = '#f43f5e';
+          msgEl.textContent = 'Error connecting to server.';
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Reset Password';
+        }
+      }
     </script>
     <script src="script.js" defer></script>
   </body>
